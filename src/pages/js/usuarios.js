@@ -118,31 +118,51 @@ document.getElementById("createUserForm").addEventListener("submit", async (e) =
     const typeUser = document.getElementById("typeUser").value;
     const auth = firebase.auth();
 
-    try {
-        // Crear el usuario en Firebase Authentication
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const userId = userCredential.user.uid;
+    if(password.length > 5){
+        try {
+            // Crear el usuario en Firebase Authentication
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const userId = userCredential.user.uid;
+    
+            // Guardar los datos del usuario en Firestore
+            await db.collection("users").doc(userId).set({
+                id: userId,
+                name: name,
+                lastName: lastName,
+                dni: dni,
+                email: email,
+                phone: phone,
+                status: status,
+                typeUser: typeUser
+            });
+    
+            Swal.fire({
+                title: "Muy bien",
+                text: "Usuario creado!",
+                icon: "success"
+              });
 
-        // Guardar los datos del usuario en Firestore
-        await db.collection("users").doc(userId).set({
-            id: userId,
-            name: name,
-            lastName: lastName,
-            dni: dni,
-            email: email,
-            phone: phone,
-            status: status,
-            typeUser: typeUser
-        });
-
-        $('#userModal').modal('hide');
+            $('#userModal').modal('hide');
+            enable()
+    
+        } catch (error) {
+            enable()
+            Swal.fire({
+                title: "Oops",
+                text: "Error al crear el usuario -> "+error.message,
+                icon: "error"
+              });
+        }
+    }else{
         enable()
-
-    } catch (error) {
-        enable()
-        console.error("Error al crear el usuario:", error);
-        alert("Error: " + error.message);
+        Swal.fire({
+            title: "Oops",
+            text: "Debe tener mas de 5 caracteres!",
+            icon: "info"
+          });
     }
+
+  
 });
 
 // Función para activar/desactivar usuarios
@@ -178,3 +198,19 @@ var modalAddUser = document.getElementById('userModal');
 modalAddUser.addEventListener('hidden.bs.modal', function (event) {
     document.getElementById("createUserForm").reset();
 });
+
+function isLetter(event) {
+    const charCode = event.which || event.keyCode;
+    // Permitir letras y teclas especiales como la barra espaciadora y las teclas de control
+    return (charCode >= 65 && charCode <= 90) || // Letras mayúsculas
+           (charCode >= 97 && charCode <= 122) || // Letras minúsculas
+           charCode === 32 || // Espacio
+           charCode === 8 || // Retroceso
+           charCode === 46 || // Suprimir
+           charCode === 9; // Tabulador
+}
+
+function validateLetters(input) {
+    // Reemplaza cualquier carácter que no sea una letra o espacio
+    input.value = input.value.toUpperCase().replace(/[^a-zA-Z\s]/g, '');
+}

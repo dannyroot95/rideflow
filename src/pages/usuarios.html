@@ -7,56 +7,113 @@
     <link rel='stylesheet' type='text/css' media='screen' href='/src/css/style.css'>
     <link href="../../vendor/datatables/datatables.min.css" rel="stylesheet">
     <script src="../../vendor/datatables/datatables.min.js"></script>
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
 
+	<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  
 </head>
 
 <body>
 
-    <div class="container">
-  
-          <table class="table table-hover table-bordered display rounded rounded-3 overflow-hidden" id="tb-data">
+    <center>
+            <div style="margin-top: 20%;" class="loader" id="loader" style="display: block;">
+            </div>
+    </center>
+
+    <div id="container" style="display: none;">
+          <table class="table table-hover table-bordered display overflow-hidden" id="tb-data">
             <thead>
-                <tr>
-                    <th>DNI</th>
-                    <th>Correo</th>
+                <tr> 
+                    <th></th>
                     <th>Nombres</th>
                     <th>Apellidos</th>
+                    <th>Correo</th>
+                    <th>DNI</th>
                     <th>Teléfono</th>
                     <th>Estado</th>
                     <th>Tipo de Usuario</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>12345678A</td>
-                    <td>juan.perez@example.com</td>
-                    <td>Juan</td>
-                    <td>Pérez</td>
-                    <td>123456789</td>
-                    <td>Activo</td>
-                    <td>Administrador</td>
-                </tr>
-                <tr>
-                    <td>23456789B</td>
-                    <td>ana.gomez@example.com</td>
-                    <td>Ana</td>
-                    <td>Gómez</td>
-                    <td>987654321</td>
-                    <td>Inactivo</td>
-                    <td>Usuario</td>
-                </tr>
-                <tr>
-                    <td>34567890C</td>
-                    <td>mario.rodriguez@example.com</td>
-                    <td>Mario</td>
-                    <td>Rodríguez</td>
-                    <td>456789123</td>
-                    <td>Activo</td>
-                    <td>Moderador</td>
-                </tr>
+             
             </tbody>
         </table>
     </div>
+
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Complete los campos para crear un usuario</h5>
+                    <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createUserForm">
+                        <!-- DNI -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="dni-addon">DNI</span>
+                            <input type="text" class="form-control" id="dni" placeholder="Ingresa el DNI" aria-label="DNI" aria-describedby="dni-addon" required>
+                        </div>
     
+                        <!-- Nombres -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="name-addon">Nombres</span>
+                            <input type="text" class="form-control" id="name" placeholder="Ingresa los nombres" aria-label="Nombres" aria-describedby="name-addon" required>
+                        </div>
+    
+                        <!-- Apellidos -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="lastName-addon">Apellidos</span>
+                            <input type="text" class="form-control" id="lastName" placeholder="Ingresa los apellidos" aria-label="Apellidos" aria-describedby="lastName-addon" required>
+                        </div>
+    
+                        <!-- Correo Electrónico -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="email-addon">Correo</span>
+                            <input type="email" class="form-control" id="email" placeholder="Ingresa el correo" aria-label="Correo" aria-describedby="email-addon" required>
+                        </div>
+    
+                        <!-- Teléfono -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="phone-addon">Teléfono</span>
+                            <input type="number" class="form-control" id="phone" placeholder="Ingresa el teléfono" aria-label="Teléfono" aria-describedby="phone-addon" required 
+                                min="0" max="99999999" maxlength="8">
+                        </div>
+    
+                        <!-- Contraseña -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="password-addon">Contraseña</span>
+                            <input type="password" class="form-control" id="password" placeholder="Ingresa la contraseña" aria-label="Contraseña" aria-describedby="password-addon" required>
+                        </div>
+    
+                        <!-- Estado (checkbox) -->
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="status" checked>
+                            <label class="form-check-label" for="status">Activo</label>
+                        </div>
+    
+                        <!-- Tipo de Usuario -->
+                        <div class="mb-3 input-group">
+                            <label class="input-group-text" for="typeUser">Tipo de Usuario</label>
+                            <select class="form-select" id="typeUser" required>
+                                <option value="admin" selected>Administrador</option>
+                                <option value="window">Ventanilla</option>
+                                <option value="operator">Operador</option>
+                            </select>
+                        </div>
+    
+                        <!-- Botón de Crear -->
+                        <button type="submit" id="btn-add-user" class="btn btn-primary">Crear Usuario</button>
+                        <center><div class="loader2" id="loader2" style="display: none;"></div></center>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/config.js"></script>
     <script src='/src/pages/js/usuarios.js'></script>
 </body>

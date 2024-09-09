@@ -28,7 +28,7 @@ function createDatatable() {
         destroy: true, // Permite destruir la tabla para reinicializarla
     });
 
-    let button = `<button data-bs-toggle="modal" data-bs-target="#userModal" class="btn btn-success" style="margin-left:10px;">Agregar usuario</button>`;
+    let button = `<button data-bs-toggle="modal" data-bs-target="#userModal" class="btn btn-success" style="margin-left:10px;"><b>+</b>&nbsp;Agregar usuario</button>`;
     $(button).appendTo('.dt-length');
 }
 

@@ -28,7 +28,7 @@ function createDatatable() {
         destroy: true, // Permite destruir la tabla para reinicializarla
     });
 
-    let button = `<button data-bs-toggle="modal" data-bs-target="#userModal" class="btn btn-success" style="margin-left:10px;"><b>+</b>&nbsp;Agregar usuario</button>`;
+    let button = `<button data-bs-toggle="modal" data-bs-target="#userModal" class="btn btn-success" style="margin-left:10px;"><b>+</b>&nbsp;Agregar asociacion</button>`;
     $(button).appendTo('.dt-length');
 }
 
@@ -37,30 +37,15 @@ createDatatable();
 const dataTable = $('#tb-data').DataTable();
 const usersCollection = db.collection('users');
 
-usersCollection.where("typeUser", "!=", "association").onSnapshot((snapshot) => {
+// Aplica un filtro para obtener solo los usuarios cuyo typeUser sea 'association'
+usersCollection.where("typeUser", "==", "association").onSnapshot((snapshot) => {
     // Limpia el DataTable antes de añadir nuevos datos
     dataTable.clear();
-    
+
     snapshot.forEach((doc, index) => {
         const userData = doc.data();
 
         const details = `<center><button class="btn btn-light" style="background-color:#000;color:white;" data-user='${JSON.stringify(userData)}' onclick="showDetails(this)">Ver</button></center>`;
-
-        // Asignación de typeUserText usando switch
-        let typeUserText;
-        switch (userData.typeUser) {
-            case "superAdmin":
-                typeUserText = "Super Administrador";
-                break;
-            case "admin":
-                typeUserText = "Administrador";
-                break;
-            case "window":
-                typeUserText = "Ventanilla";
-                break;
-            default:
-                typeUserText = "Ciudadano";
-        }
 
         // Configuración del estado y el switch
         const statusText = (userData.status === "on") 
@@ -78,30 +63,30 @@ usersCollection.where("typeUser", "!=", "association").onSnapshot((snapshot) => 
         // Añadir los datos a DataTable
         dataTable.row.add([
             details,
-            userData.name,
-            userData.lastName,
-            userData.email,
-            userData.dni,
+            userData.association,
+            userData.ruc,
             userData.phone,
             statusText,
-            typeUserText
+            userData.email
         ]);
     });
-       // Dibuja el DataTable con los nuevos datos
-        dataTable.draw(false);
-          // Muestra el contenedor pero con visibilidad oculta
-        document.getElementById("container").style.display = "block";
-        document.getElementById("container").style.visibility = "hidden";
 
-        // Ajusta las columnas del DataTable para evitar desalineaciones
-        dataTable.columns.adjust().draw(false);
-        document.getElementById("container").style.visibility = "visible";
-        document.getElementById("loader").style.display = "none";
+    // Dibuja el DataTable con los nuevos datos
+    dataTable.draw(false);
 
+    // Muestra el contenedor pero con visibilidad oculta
+    document.getElementById("container").style.display = "block";
+    document.getElementById("container").style.visibility = "hidden";
+
+    // Ajusta las columnas del DataTable para evitar desalineaciones
+    dataTable.columns.adjust().draw(false);
+    document.getElementById("container").style.visibility = "visible";
+    document.getElementById("loader").style.display = "none";
 
 }, (error) => {
     console.error("Error al obtener documentos: ", error);
 });
+
 
 document.getElementById("createUserForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -109,61 +94,71 @@ document.getElementById("createUserForm").addEventListener("submit", async (e) =
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
     const name = document.getElementById("name").value;
-    const lastName = document.getElementById("lastName").value;
     const dni = document.getElementById("dni").value;
+    const ruc = document.getElementById("ruc").value;
     const phone = document.getElementById("phone").value;
-    const status = document.getElementById("status").checked ? "on" : "off";
-    const typeUser = document.getElementById("typeUser").value;
+    const association = document.getElementById("association").value;
+    const address = document.getElementById("address").value;
+    const file = document.getElementById("file-function").files[0];  // Obtener archivo
+    const status = "on"; // Siempre será activo al crear
+    const typeUser = "association"; // Tipo de usuario "asociación"
     const auth = firebase.auth();
 
-    if(password.length > 5){
+    if (password.length > 5 && file) {
 
-        disable()
+        disable();
 
         try {
-            // Crear el usuario en Firebase Authentication
+            // Crear usuario en Firebase Authentication
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
             const userId = userCredential.user.uid;
-    
+
+            // Subir archivo PDF a Firebase Storage
+            const storageRef = firebase.storage().ref();
+            const fileRef = storageRef.child(`associations/${ruc}/licence/${file.name}`);
+            await fileRef.put(file);
+            const fileUrl = await fileRef.getDownloadURL();  // Obtener URL del archivo
+
             // Guardar los datos del usuario en Firestore
             await db.collection("users").doc(userId).set({
                 id: userId,
                 name: name,
-                lastName: lastName,
                 dni: dni,
+                ruc:ruc,
                 email: email,
                 phone: phone,
+                address: address,
+                association: association,
+                fileUrl: fileUrl,  // URL del archivo subido
                 status: status,
                 typeUser: typeUser
             });
-    
+
             Swal.fire({
                 title: "Muy bien",
-                text: "Usuario creado!",
+                text: "Asociación creada!",
                 icon: "success"
-              });
+            });
 
-            $('#userModal').modal('hide');
-            enable()
-    
+            $('#userModal').modal('hide'); // Cerrar modal
+            enable(); // Habilitar botones
+
         } catch (error) {
-            enable()
+            enable();
             Swal.fire({
-                title: "Oops",
-                text: "Error al crear el usuario -> "+error.message,
+                title: "Error",
+                text: `Error al crear la asociación: ${error.message}`,
                 icon: "error"
-              });
+            });
         }
-    }else{
-        enable()
+    } else {
+        enable();
         Swal.fire({
             title: "Oops",
-            text: "Debe tener mas de 5 caracteres!",
+            text: "La contraseña debe tener más de 5 caracteres y se debe subir un archivo PDF.",
             icon: "info"
-          });
+        });
     }
-
-  
 });
 
 // Función para activar/desactivar usuarios
@@ -180,7 +175,7 @@ function showDetails(button) {
     const userData = JSON.parse(button.getAttribute('data-user'));
     // Aquí puedes manejar la visualización de los detalles del usuario
     console.log(userData);
-    alert(`Nombre: ${userData.name}\nApellido: ${userData.lastName}\nEmail: ${userData.email}\nEstado: ${userData.status}`);
+    alert(`Asociacion: ${userData.association}\nEmail: ${userData.email}\nEstado: ${userData.status}`);
 }
 
 function enable(){

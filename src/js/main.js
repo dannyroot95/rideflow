@@ -7,7 +7,7 @@ const user = dataUser ? JSON.parse(dataUser) : null;
 
 // Función principal que se ejecuta al cargar el documento
 $(document).ready(function () {
-    inicio();  // Cargar la página de inicio al cargar el documento
+    gotoPage("inicio","Inicio","inicio");  // Cargar la página de inicio al cargar el documento
     window.addEventListener('hashchange', handleHashChange);  // Detectar cambios en el hash
     sidebarList.addEventListener('click', handleSidebarClick);  // Manejar clics en la barra lateral
     insertData(user);  // Insertar los datos del usuario en la UI
@@ -19,29 +19,25 @@ function handleHashChange() {
 
     switch (direccion) {
         case '#inicio':
-            inicio();
+            gotoPage("inicio","Inicio","inicio");
             break;
         case '#usuarios':
-            usuarios();
+            gotoPage("usuarios","Usuarios","usuarios");
             break;
+        case '#asociaciones':
+            gotoPage("asociaciones","Asociaciones","asociaciones");
+            break;    
         default:
             routeErrE();
             break;
     }
 }
 
-// Función para cargar la página de inicio
-function inicio() {
-    window.location.hash = "#inicio";
-    actualizarTitulo("Inicio");
-    cargarContenido("/src/pages/inicio.html");
-}
 
-// Función para cargar la página de usuarios
-function usuarios() {
-    window.location.hash = "#usuarios";
-    actualizarTitulo("Usuarios");
-    cargarContenido("/src/pages/usuarios.html");
+function gotoPage(location,title,content){
+    window.location.hash = `#${location}`;
+    actualizarTitulo(title);
+    cargarContenido(`/src/pages/${content}.html`);
 }
 
 // Función para manejar rutas no válidas

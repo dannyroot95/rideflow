@@ -2,12 +2,14 @@
 const contentModulo = document.querySelector(".app-content-actions");
 const sidebarList = document.getElementById('sidebarList');
 const sidebarItems = document.querySelectorAll('.sidebar-list-item');
-const dataUser = localStorage.getItem("userData");
-const user = dataUser ? JSON.parse(dataUser) : null;
 
 // Función principal que se ejecuta al cargar el documento
 $(document).ready(function () {
-    gotoPage("inicio","Inicio","inicio");  // Cargar la página de inicio al cargar el documento
+    if(user.typeUser == "superAdmin"){
+        gotoPage("inicio","Inicio","inicio"); 
+    }else if(user.typeUser == "association"){
+        gotoPage("inicio-asoc","Inicio","inicio-asoc");
+    }
     window.addEventListener('hashchange', handleHashChange);  // Detectar cambios en el hash
     sidebarList.addEventListener('click', handleSidebarClick);  // Manejar clics en la barra lateral
     insertData(user);  // Insertar los datos del usuario en la UI
@@ -20,6 +22,9 @@ function handleHashChange() {
     switch (direccion) {
         case '#inicio':
             gotoPage("inicio","Inicio","inicio");
+            break;
+        case '#inicio-asoc':
+            gotoPage("inicio-asoc","Inicio","inicio-asoc");
             break;
         case '#usuarios':
             gotoPage("usuarios","Usuarios","usuarios");
@@ -96,7 +101,10 @@ function insertData(user) {
         ? "Super Administrador" 
         : user.typeUser === "admin" 
         ? "Administrador" 
+        : user.typeUser === "association"
+        ? "Asociación"
         : "Sin datos";
+
 }
 
 // Función para manejar los clics en los elementos de la barra lateral

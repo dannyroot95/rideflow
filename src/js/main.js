@@ -32,6 +32,12 @@ function handleHashChange() {
         case '#asociaciones':
             gotoPage("asociaciones","Asociaciones","asociaciones");
             break;    
+        case '#expedientes':
+            gotoPage("expedientes","Expedientes","expedientes");
+            break;      
+        case '#carpetas':
+            gotoPage("carpetas","Carpetas","carpetas");
+            break;         
         default:
             routeErrE();
             break;

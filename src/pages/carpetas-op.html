@@ -100,8 +100,13 @@
                         <div class="mb-3 input-group">
                             <span class="input-group-text" id="dni-addon">DNI</span>
                             <input disabled maxlength="8" placeholder="Ingrese el DNI" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="dni" required>
-                            <span style="display: none;" class="input-group-text" style="font-weight: 600;font-size: 12px;color: #014c69;" id="dni-addon">Sube tu DNI escaneado (ambas caras)</span>
-                            <input type="file" class="form-control" id="dniFile" required disabled style="display: none;">
+                            <span style="background-color: #0043a8;color: #ffffff;" class="input-group-text" id="dni-addon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                  </svg>
+                                &nbsp;  
+                                <a id="linkDownloadDNI" style="color: #ffffff;text-decoration: none;" href="www.google.com" target="_blank">Descargar DNI</a></span>
                         </div>
     
                         <!-- Nombres -->
@@ -144,7 +149,7 @@
     </div>
 
     <script src="../../js/config.js"></script>
-    <script src='/src/pages/js/carpetas.js'></script>
+    <script src='/src/pages/js/carpetas-op.js'></script>
     <script src='/src/pages/js/apiReniec.js'></script>
 </body>
 

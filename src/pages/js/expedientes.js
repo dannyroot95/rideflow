@@ -1,5 +1,6 @@
 var dataUser = localStorage.getItem("userData");
 var user = dataUser ? JSON.parse(dataUser) : null;
+
 // Inicializa DataTable
 function createDatatable() {
     $('#tb-data').DataTable({
@@ -30,7 +31,7 @@ function createDatatable() {
         destroy: true, // Permite destruir la tabla para reinicializarla
     });
 
-    let button = `<button data-bs-toggle="modal" data-bs-target="#fileModal" class="btn btn-primary" style="margin-left:10px;"><b>+</b>&nbsp;Agregar expediente</button>&nbsp;&nbsp;<button class="btn btn-success" id="migrateExpedientes">Migrar expedientes</button>`;
+    let button = `<button id="addFile" data-bs-toggle="modal" data-bs-target="#fileModal" class="btn btn-primary" style="margin-left:10px;"><b>+</b>&nbsp;Agregar expediente</button>&nbsp;&nbsp;<button class="btn btn-success" id="migrateExpedientes" >Migrar expedientes</button>&nbsp;<div id="loader-small" class="loaderSmall"></div>`;
     $(button).appendTo('.dt-length');
 }
 
@@ -46,11 +47,9 @@ usersCollection.where("association", "==", user.ruc).onSnapshot((snapshot) => {
     snapshot.forEach((doc, index) => {
         const fileData = doc.data();
         const details = `<center><button class="btn btn-light" style="background-color:#093e00;color:white;" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this)">Ver</button></center>`;
-        let status = fileData.status
+        let status = getStatus(fileData.status)
 
-        if(status == "registered"){
-            status = `Registrado`
-        }
+        
 
         // Añadir los datos a DataTable
         dataTable.row.add([
@@ -59,7 +58,7 @@ usersCollection.where("association", "==", user.ruc).onSnapshot((snapshot) => {
             fileData.name,
             fileData.dni,
             fileData.phone,
-            fileData.email,   
+            formatoFechaDesdeTimestamp(fileData.dateRegister)+" "+obtenerHoraMinutoDesdeTimestamp(fileData.dateRegister),   
             status
         ]);
     });
@@ -123,9 +122,13 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
             dni: dni,
             email: email,
             phone: phone,
-            fileURL: fileURL,
+            fileUrlDNI: fileURL,
             status: "registered",
-            folder: ""
+            folder: "",
+            idInCharge : "",
+            txtNote: "",
+            inCharge : "",
+            dateRegister : Date.now()
         });
 
         // Opcional: Actualizar el documento con el ID si es necesario
@@ -162,13 +165,25 @@ document.getElementById('migrateExpedientes').addEventListener('click', async ()
         // Obtener los DNIs visibles en la tabla cuyo estado es "Registrado"
         const visibleDnis = [];
         dataTable.rows({ search: 'applied' }).data().each(function (value, index) {
-            if (value[6] === 'Registrado') {  // Asumiendo que el estado está en la sexta columna
+            if (value[6] === `<b style="color:#048e34;">Registrado</b>`) {  // Asumiendo que el estado está en la sexta columna
                 visibleDnis.push(value[3]);  // Asumiendo que el DNI está en la cuarta columna
             }
         });
 
-        alert('DNIs visibles: ' + visibleDnis.join(', '));
+          // Comprobar si hay DNIs con estado "Registrado"
+          if (visibleDnis.length === 0) {
+            Swal.fire({
+                title: "Oops!",
+                text: "No hay expedientes para migrar.",
+                icon: "info"
+            });
+            
+            return;  // Salir de la función si no hay registros para procesar
+        }
         
+        document.getElementById("loader-small").style = "display : inline-block;"
+        document.getElementById("addFile").disabled = true
+        document.getElementById("migrateExpedientes").disabled = true
         // Contar documentos en la colección 'folders'
         const snapshot = await foldersCollection.get();
         const count = snapshot.size;
@@ -189,11 +204,41 @@ document.getElementById('migrateExpedientes').addEventListener('click', async ()
         // Ejecutar el batch de actualizaciones
         await batch.commit();
 
-        console.log('Expedientes migrados con éxito.');
-        alert('Migración completada con éxito.');
+       // Crear un nuevo documento en 'folders' después de migrar expedientes
+       const newFolderDoc = await foldersCollection.add({
+        codeFolder: folderId,
+        association: userData.ruc,
+        quantityFiles: visibleDnis.length,
+        dateRegister : Date.now(),
+        status : "migrated",
+        nameAssociation : userData.association
+    });
+
+    await firebase.firestore().collection("folders").doc(newFolderDoc.id).update({
+        id: newFolderDoc.id
+    });
+
+        document.getElementById("loader-small").style = "display : none;"
+        document.getElementById("addFile").disabled = false
+        document.getElementById("migrateExpedientes").disabled = false
+
+        Swal.fire({
+            title: "Muy bien!",
+            text: "Migración completada.",
+            icon: "success"
+        });
+
     } catch (error) {
         console.error('Error al migrar expedientes:', error);
-        alert('Error al migrar expedientes.');
+        document.getElementById("loader-small").style = "display : none;"
+        document.getElementById("addFile").disabled = false
+        document.getElementById("migrateExpedientes").disabled = false
+
+        Swal.fire({
+            title: "Oops!",
+            text: "Ocurrió un error.",
+            icon: "error"
+        });
     }
 });
 
@@ -236,4 +281,33 @@ function isLetter(event) {
 function validateLetters(input) {
     // Reemplaza cualquier carácter que no sea una letra o espacio
     input.value = input.value.toUpperCase().replace(/[^a-zA-Z\s]/g, '');
+}
+
+function getStatus(status){
+    if(status == "registered"){
+        status = `<b style="color:#048e34;">Registrado</b>`
+    }else if(status == "migrated"){
+        status = `<b style="color:#b49600;">Migrado</b>`
+    }else if(status == "observed"){
+        status = `<b style="color:#fc0000;">Observado</b>`
+    }
+    return status
+}
+
+function formatoFechaDesdeTimestamp(timestamp) {
+    const fecha = new Date(timestamp);
+    const dia = String(fecha.getDate()).padStart(2, '0'); // Obtiene el día y lo formatea
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0'); // Obtiene el mes y lo formatea
+    const anio = fecha.getFullYear(); // Obtiene el año
+
+    return `${dia}/${mes}/${anio}`; // Devuelve la fecha en formato dd/mm/yyyy
+}
+
+// Función para obtener la hora y minutos desde un timestamp
+function obtenerHoraMinutoDesdeTimestamp(timestamp) {
+    const fecha = new Date(timestamp);
+    const horas = String(fecha.getHours()).padStart(2, '0'); // Obtiene las horas y las formatea
+    const minutos = String(fecha.getMinutes()).padStart(2, '0'); // Obtiene los minutos y los formatea
+
+    return `${horas}:${minutos}`; // Devuelve la hora en formato HH:mm
 }

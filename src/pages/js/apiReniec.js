@@ -10,7 +10,7 @@ function updateValue(e) {
 	    dni.disabled = true
         fetch('https://cors-anywhere.herokuapp.com/https://proyeccionsocial.unamad.edu.pe/intranet/dashboard/assets/js/utils/controllerDNI.php?dni=' + value, {
             headers: {
-                'Origin': 'https://tu-dominio.com', // reemplazar con el dominio real
+                'Origin': 'http://127.0.0.1:5500/', // reemplazar con el dominio real
                 'x-requested-with': 'XMLHttpRequest'
             }
         })

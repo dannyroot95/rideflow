@@ -36,7 +36,7 @@ createDatatable();
 const dataTable = $('#tb-data').DataTable();
 const foldersCollection = db.collection('folders');
 
-foldersCollection.where("association", "==", user.ruc).onSnapshot(async (snapshot) => {
+foldersCollection.onSnapshot(async (snapshot) => {
     dataTable.clear();
 
     for (const doc of snapshot.docs) {
@@ -61,7 +61,7 @@ foldersCollection.where("association", "==", user.ruc).onSnapshot(async (snapsho
 
         filesSnapshot.forEach(fileDoc => {
             const fileData = fileDoc.data();
-            const details = `<center><button class="btn btn-light" style="background-color:#00b465;color:white;" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this)">Ver</button></center>`;
+            const details = `<center><button class="btn btn-light" style="background-color:#00b465;color:white;" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this,'${folderData.id}')">Ver</button></center>`;
 
             // Añade filas a la tabla basado en los datos del archivo
             tableContent += `
@@ -81,7 +81,7 @@ foldersCollection.where("association", "==", user.ruc).onSnapshot(async (snapsho
             <div class="accordion-item">
                 <h2 class="accordion-header" id="heading${doc.id}">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${doc.id}" aria-expanded="false" aria-controls="collapse${doc.id}">
-                        Código de carpeta: ${folderData.codeFolder} &nbsp;&nbsp; | &nbsp;&nbsp; Cantidad de expedientes : ${folderData.quantityFiles} &nbsp;&nbsp; | &nbsp;&nbsp; Fecha de operación : ${formatoFechaDesdeTimestamp(folderData.dateRegister)} ${obtenerHoraMinutoDesdeTimestamp(folderData.dateRegister)}
+                      Asociación : ${folderData.nameAssociation} &nbsp;&nbsp; | &nbsp;&nbsp; Código de carpeta: ${folderData.codeFolder} &nbsp;&nbsp; | &nbsp;&nbsp; Cantidad de expedientes : ${folderData.quantityFiles} &nbsp;&nbsp; | &nbsp;&nbsp; Fecha de operación : ${formatoFechaDesdeTimestamp(folderData.dateRegister)} ${obtenerHoraMinutoDesdeTimestamp(folderData.dateRegister)}
                     </button>
                 </h2>
                 <div id="collapse${doc.id}" class="accordion-collapse collapse" aria-labelledby="heading${doc.id}" data-bs-parent="#accordionFlushExample">
@@ -108,7 +108,7 @@ foldersCollection.where("association", "==", user.ruc).onSnapshot(async (snapsho
 
 
 
-function showDetails(button) {
+function showDetails(button,idFolder) {
     // Recupera el objeto user desde el atributo data-user del botón
     const fileData = JSON.parse(button.getAttribute('data-user'));
     $('#details').modal('show')
@@ -116,6 +116,7 @@ function showDetails(button) {
     document.getElementById("name").value = fileData.name
     document.getElementById("email").value = fileData.email
     document.getElementById("phone").value = fileData.phone
+    document.getElementById("linkDownloadDNI").href = fileData.fileUrlDNI
 
     document.getElementById("status").innerHTML = getStatusFromDetails(fileData.status)
 

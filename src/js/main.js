@@ -9,6 +9,8 @@ $(document).ready(function () {
         gotoPage("inicio","Inicio","inicio"); 
     }else if(user.typeUser == "association"){
         gotoPage("inicio-asoc","Inicio","inicio-asoc");
+    }else if(user.typeUser == "operator"){
+        gotoPage("inicio-asoc","Inicio","inicio-asoc");
     }
     window.addEventListener('hashchange', handleHashChange);  // Detectar cambios en el hash
     sidebarList.addEventListener('click', handleSidebarClick);  // Manejar clics en la barra lateral
@@ -37,7 +39,10 @@ function handleHashChange() {
             break;      
         case '#carpetas':
             gotoPage("carpetas","Carpetas","carpetas");
-            break;         
+            break;   
+        case '#carpetas-op':
+            gotoPage("carpetas-op","Carpetas","carpetas-op");
+            break;                     
         default:
             routeErrE();
             break;
@@ -109,6 +114,8 @@ function insertData(user) {
         ? "Administrador" 
         : user.typeUser === "association"
         ? "Asociación"
+        : user.typeUser === "operator"
+        ? "Operador"
         : "Sin datos";
 
 }

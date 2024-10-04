@@ -92,10 +92,11 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="userModalLabel">Detalle de expediente</h5>
+                    <label style="margin-left: 30%;">Veces observado :&nbsp;<label id="timesObserved"></label></label>&nbsp;&nbsp;<label>|</label>&nbsp;&nbsp;<label>Estado : &nbsp;<label id="status"></label></label>
                     <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="detailForm">
+
                         <!-- DNI -->
                         <div class="mb-3 input-group">
                             <span class="input-group-text" id="dni-addon">DNI</span>
@@ -127,22 +128,28 @@
                             <span class="input-group-text" id="phone-addon">Teléfono</span>
                             <input disabled placeholder="Ingrese el teléfono ó celular" maxlength="9" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="phone" required>
                         </div>
-    
-                        <div class="mb-3 input-group">
-                            <span class="input-group-text">Estado del expediente</span>
-                            <span class="input-group-text" id="status"></span>
-                        </div>
+
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="inputGroupSelect01">Operación</label>
+                            <select class="form-select" id="inputGroupSelectOperation">
+                              <option value="none" selected disabled>seleccione una opcion...</option>
+                              <option style="color: #0043a8;" value="aproved">Aprobar</option>
+                              <option style="color: #fc0000;" value="observed">Observar</option>
+                              <option value="denied">Rechazar</option>
+                            </select>
+                          </div>
 
                         <div class="mb-3 input-group" id="addOn-observed">
-                            <textarea class="form-control" id="txtObserved" rows="3"></textarea>
+                            <textarea style="text-transform: uppercase;" placeholder="Digite la observación..." class="form-control" id="txtObserved" rows="3"></textarea>
                         </div>
-    
+
                         <!-- Botón de Crear -->
-                         <div class="modal-footer" id="btnCorect" style="display: flex;">
-                            <button class="btn btn-success">Enviar correción</button>
+                         <div class="modal-footer" id="btnCorrect" style="display: flex; width: 100%;">
+                            
                          </div>
+
                         <center><div class="loader2" id="loader2" style="display: none;"></div></center>
-                    </form>
+                  
                 </div>
             </div>
         </div>

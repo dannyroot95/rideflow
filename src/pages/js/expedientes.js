@@ -128,7 +128,9 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
             idInCharge : "",
             txtNote: "",
             inCharge : "",
-            dateRegister : Date.now()
+            dateRegister : Date.now(),
+            timesObserved : 0,
+            idUserAssociation : user.id
         });
 
         // Opcional: Actualizar el documento con el ID si es necesario

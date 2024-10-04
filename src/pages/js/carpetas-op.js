@@ -33,6 +33,20 @@ function createDatatable() {
 
 createDatatable();
 
+document.getElementById("inputGroupSelectOperation").addEventListener("change", function() {
+    var selectedOption = this.value;
+    var observedElement = document.getElementById("addOn-observed");
+
+    if (selectedOption === "observed") {
+        // Mostrar el elemento si se selecciona "Observar"
+        observedElement.style.display = "flex";
+    } else {
+        // Ocultar el elemento si se selecciona cualquier otra opción
+        observedElement.style.display = "none";
+    }
+});
+
+
 const dataTable = $('#tb-data').DataTable();
 const foldersCollection = db.collection('folders');
 
@@ -61,7 +75,7 @@ foldersCollection.onSnapshot(async (snapshot) => {
 
         filesSnapshot.forEach(fileDoc => {
             const fileData = fileDoc.data();
-            const details = `<center><button class="btn btn-light" style="background-color:#00b465;color:white;" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this,'${folderData.id}')">Ver</button></center>`;
+            const details = `<center><button class="btn btn-light" style="background-color:#00b465;color:white;" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this,'${folderData.id}','${folderData.timesUpdated}')">Ver</button></center>`;
 
             // Añade filas a la tabla basado en los datos del archivo
             tableContent += `
@@ -108,25 +122,37 @@ foldersCollection.onSnapshot(async (snapshot) => {
 
 
 
-function showDetails(button,idFolder) {
+function showDetails(button,idFolder,timesUpdated) {
     // Recupera el objeto user desde el atributo data-user del botón
     const fileData = JSON.parse(button.getAttribute('data-user'));
     $('#details').modal('show')
+    document.getElementById("inputGroupSelectOperation").disabled = false
+    document.getElementById("inputGroupSelectOperation").selectedIndex = 0;
+    document.getElementById("txtObserved").value = ""
     document.getElementById("dni").value = fileData.dni
     document.getElementById("name").value = fileData.name
     document.getElementById("email").value = fileData.email
     document.getElementById("phone").value = fileData.phone
     document.getElementById("linkDownloadDNI").href = fileData.fileUrlDNI
 
-    document.getElementById("status").innerHTML = getStatusFromDetails(fileData.status)
+    document.getElementById("timesObserved").innerHTML = fileData.timesObserved
+    document.getElementById("status").innerHTML = getStatus(fileData.status)
 
-    if(fileData.status != "observed"){
+    document.getElementById("btnCorrect").innerHTML = `
+        <button onclick="send('${fileData.id}','${idFolder}','${fileData.idUserAssociation}','${fileData.timesObserved}','${timesUpdated}')" class="btn btn-success">Enviar</button>
+    `
+
+    if(fileData.status == 'migrated'){
         //addOn-observed btnCorect
         document.getElementById("addOn-observed").style = "display:none;"
-        document.getElementById("btnCorect").style = "display:none;"
-    }else{
+        document.getElementById("btnCorrect").style = "display:flex;width:100%"
+
+    }else if (fileData.status == 'observed'){
         document.getElementById("addOn-observed").style = "display:flex;width:100%"
-        document.getElementById("btnCorect").style = "display:flex;width:100%"
+        document.getElementById("btnCorrect").style = "display:none;"
+        document.getElementById("txtObserved").value = fileData.txtNote
+        document.getElementById("inputGroupSelectOperation").disabled = true
+
     }
 
 }
@@ -173,4 +199,38 @@ function obtenerHoraMinutoDesdeTimestamp(timestamp) {
     const minutos = String(fecha.getMinutes()).padStart(2, '0'); // Obtiene los minutos y los formatea
 
     return `${horas}:${minutos}`; // Devuelve la hora en formato HH:mm
+}
+
+function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder){
+    let status =  document.getElementById("inputGroupSelectOperation").value
+    if(status == "observed"){
+        let txtObserved = document.getElementById("txtObserved").value
+        if(txtObserved != ""){
+             firebase.firestore().collection("files").doc(idFile).update({
+                status: status,
+                txtNote : txtObserved,
+                timesObserved : parseInt(timesObserved)+1
+            });
+            firebase.firestore().collection("folders").doc(idFolder).update({
+                timesUpdated: parseInt(timesUpdatedFolder)+1
+            });
+            Swal.fire({
+                title: "Muy bien",
+                text: "Expediente actualizado!",
+                icon: "success"
+            });
+            $('#details').modal('hide')
+        }else{
+            Swal.fire({
+                title: "Oops",
+                text: "Digite la observacion!",
+                icon: "info"
+            });
+        }
+
+    }
+}
+
+function sendNotification(){
+
 }

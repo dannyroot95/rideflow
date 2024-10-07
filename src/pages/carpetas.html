@@ -95,12 +95,12 @@
                     <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="detailForm">
+                   
                         <!-- DNI -->
                         <div class="mb-3 input-group">
                             <span class="input-group-text" id="dni-addon">DNI</span>
                             <input disabled maxlength="8" placeholder="Ingrese el DNI" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="dni" required>
-                            <span style="display: none;" class="input-group-text" style="font-weight: 600;font-size: 12px;color: #014c69;" id="dni-addon">Sube tu DNI escaneado (ambas caras)</span>
+                            <span style="display: none;" class="input-group-text" style="font-weight: 600;font-size: 12px;color: #014c69;" id="dni-addon-file">Sube tu DNI escaneado (ambas caras)</span>
                             <input type="file" class="form-control" id="dniFile" required disabled style="display: none;">
                         </div>
     
@@ -133,11 +133,11 @@
                         </div>
     
                         <!-- Botón de Crear -->
-                         <div class="modal-footer" id="btnCorect" style="display: flex;">
-                            <button class="btn btn-success">Enviar correción</button>
+                         <div class="modal-footer" id="btnCorrect" style="display: flex;">
+                            
                          </div>
                         <center><div class="loader2" id="loader2" style="display: none;"></div></center>
-                    </form>
+              
                 </div>
             </div>
         </div>

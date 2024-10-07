@@ -130,7 +130,8 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
             inCharge : "",
             dateRegister : Date.now(),
             timesObserved : 0,
-            idUserAssociation : user.id
+            idUserAssociation : user.id,
+            idFolder : ""
         });
 
         // Opcional: Actualizar el documento con el ID si es necesario
@@ -220,6 +221,16 @@ document.getElementById('migrateExpedientes').addEventListener('click', async ()
         id: newFolderDoc.id
     });
 
+    await firebase.firestore().collection("notifications").add({
+        idFolder: newFolderDoc.id,
+        nameAssociation:userData.association,
+        idUser : "",
+        title : "Una nueva carpeta ha sido recibida!",
+        type : "folder",
+        content : `Se ha enviado ${visibleDnis.length} expedientes`,
+        isOpen : false
+    });
+
         document.getElementById("loader-small").style = "display : none;"
         document.getElementById("addFile").disabled = false
         document.getElementById("migrateExpedientes").disabled = false
@@ -292,6 +303,8 @@ function getStatus(status){
         status = `<b style="color:#b49600;">Migrado</b>`
     }else if(status == "observed"){
         status = `<b style="color:#fc0000;">Observado</b>`
+    }else if(status == "corrected"){
+        status = `<b style="color:#009083;">Corregido</b>`
     }
     return status
 }

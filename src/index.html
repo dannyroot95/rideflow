@@ -15,7 +15,16 @@
    }
   </script>
   <script src="/vendor/jquery/jquery-3.2.1.min.js"></script>
+
   <link rel='stylesheet' type='text/css' media='screen' href='/src/css/style.css'>
+
+  <link href="../../vendor/datatables/datatables.min.css" rel="stylesheet">
+  <script src="../../vendor/datatables/datatables.min.js"></script>
+  <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   
 </head>
 <body>
@@ -34,6 +43,7 @@
 
       </ul>
       <script src="/src/js/modules.js"></script>
+
       <div class="account-info">
         <div class="account-info-picture">
           <img src="https://images.unsplash.com/photo-1527736947477-2790e28f3443?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTE2fHx3b21hbnxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60" alt="Account">
@@ -60,7 +70,33 @@
       </div>
     </div>
   </div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="notificationModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Notificaciones</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div class="notification-icon">
+    <svg class="bell" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.93 6 11V16L4 18V19H20V18L18 16Z" fill="currentColor"/>
+    </svg>
+    <div id="count" class="count"></div>
+</div>
+
+
     <script src='/src/js/main.js'></script>
+    <script src='/src/js/notification.js'></script>
 </body>
 </html>
 

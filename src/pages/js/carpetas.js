@@ -121,11 +121,35 @@ function showDetails(button) {
 
     if(fileData.status != "observed"){
         //addOn-observed btnCorect
+        document.getElementById("dni").disabled = true
+        document.getElementById("dni-addon-file").style.display = "none"
+        document.getElementById("dniFile").style.display = "none"
+        document.getElementById("dniFile").disabled = true
+        document.getElementById("email").disabled = true
+        document.getElementById("phone").disabled = true
+
+
         document.getElementById("addOn-observed").style = "display:none;"
-        document.getElementById("btnCorect").style = "display:none;"
+        document.getElementById("btnCorrect").style = "display:none;"
+        document.getElementById("btnCorrect").innerHTML = ``
     }else{
+
+        document.getElementById("dni").disabled = false
+        document.getElementById("dni-addon-file").style = "display : flex;font-weight: 600;font-size: 12px;color: #014c69;"
+        document.getElementById("dniFile").style.display = "flex"
+        document.getElementById("dniFile").disabled = false
+        document.getElementById("email").disabled = false
+        document.getElementById("phone").disabled = false
+
         document.getElementById("addOn-observed").style = "display:flex;width:100%"
-        document.getElementById("btnCorect").style = "display:flex;width:100%"
+        document.getElementById("btnCorrect").style = "display:flex;width:100%"
+        document.getElementById("txtObserved").value = fileData.txtNote
+        document.getElementById("txtObserved").disabled = true
+        document.getElementById("txtObserved").style = "text-transform: uppercase;color:black;"
+
+        document.getElementById("btnCorrect").innerHTML = `
+        <button id="btnSendCorrected" class="btn btn-success" onclick="sendOberved('${fileData.id}','${fileData.idFolder}')" >Enviar correción</button>`
+
     }
 
 }
@@ -138,6 +162,8 @@ function getStatus(status){
         status = `<b style="color:#b49600;">Migrado</b>`
     }else if(status == "observed"){
         status = `<b style="color:#fc0000;">Observado</b>`
+    }else if(status == "corrected"){
+        status = `<b style="color:#009083;">Corregido</b>`
     }
     return status
 }
@@ -152,6 +178,9 @@ function getStatusFromDetails(status){
     }else if(status == "observed"){
         document.getElementById("status").style = "color:#fff;background-color: #fc0000;"
         status = `<b>Observado</b>`
+    }else if(status == "corrected"){
+        document.getElementById("status").style = "color:#fff;background-color: #009083;"
+        status = `<b>Corregido</b>`
     }
     return status
 }
@@ -173,3 +202,127 @@ function obtenerHoraMinutoDesdeTimestamp(timestamp) {
 
     return `${horas}:${minutos}`; // Devuelve la hora en formato HH:mm
 }
+
+// Función para enviar el archivo DNI escaneado a Firestore
+function sendOberved(idFile, idFolder) {
+    // Captura los valores de los campos
+    const dni = document.getElementById('dni').value.trim();
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+
+    // Validación de campos vacíos
+    if (!dni || !name || !email || !phone) {
+        Swal.fire({
+            title: "Campos incompletos",
+            text: "Por favor, completa todos los campos antes de continuar.",
+            icon: "warning"
+        });
+        return; // Detiene la ejecución de la función si hay campos vacíos
+    }
+
+    // Muestra el loader
+    document.getElementById('loader2').style.display = 'block';
+    document.getElementById("btn-close-modal").style.display = "none"
+    document.getElementById("btnSendCorrected").disabled = true;
+
+    // Captura el archivo seleccionado
+    const dniFile = document.getElementById('dniFile').files[0];
+
+    if (dniFile) {
+        // Referencia a Firebase Storage con la ruta personalizada
+        const storageRef = firebase.storage().ref();
+        const fileRef = storageRef.child(`associations/${user.ruc}/files/dni/${dni}/${dniFile.name}`);
+
+        // Subir el archivo a Firebase Storage
+        const uploadTask = fileRef.put(dniFile);
+
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                // Progreso de la subida del archivo (opcional, si deseas mostrar progreso)
+                let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Subida de archivo: ' + progress + '%');
+            },
+            (error) => {
+                // Maneja los errores de la subida
+                console.error('Error al subir el archivo: ', error);
+                document.getElementById('loader2').style.display = 'none';
+                document.getElementById("btn-close-modal").style.display = "block";
+            },
+            () => {
+                // Subida exitosa, obtenemos la URL del archivo
+                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                    console.log('Archivo disponible en: ', downloadURL);
+
+                    // Guarda los datos del formulario y la URL del archivo en Firestore
+                    const fileRef = firebase.firestore().collection('files').doc(idFile);
+
+                    fileRef.update({
+                        dni: dni,
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        status: "corrected",
+                        dniFileURL: downloadURL, // Guardamos la URL del archivo
+                        timestamp: Date.now() // Timestamp opcional
+                    });
+
+                    firebase.firestore().collection('folders').doc(idFolder).update({ status: "corrected",dateRegister : Date.now()})
+                        .then(() => {
+                            Swal.fire({
+                                title: "Muy bien",
+                                text: "Expediente corregido!",
+                                icon: "success"
+                            });
+                            $('#details').modal('hide');
+                            document.getElementById('loader2').style.display = 'none';
+                            document.getElementById("btn-close-modal").style.display = "block";
+                        })
+                        .catch((error) => {
+                            Swal.fire({
+                                title: "Oops",
+                                text: "Ocurrió un error!",
+                                icon: "error"
+                            });
+                            document.getElementById('loader2').style.display = 'none';
+                            document.getElementById("btn-close-modal").style.display = "block";
+                        });
+                });
+            }
+        );
+    } else {
+        // Si no se seleccionó ningún archivo, simplemente guarda los demás datos en Firestore
+        const fileRef = firebase.firestore().collection('files').doc(idFile);
+
+        fileRef.update({
+            dni: dni,
+            name: name,
+            email: email,
+            phone: phone,
+            status: "corrected",
+            timestamp: Date.now() // Timestamp opcional
+        })
+        .then(() => {
+            firebase.firestore().collection('folders').doc(idFolder).update({ status: "corrected" });
+
+            Swal.fire({
+                title: "Muy bien",
+                text: "Expediente corregido!",
+                icon: "success"
+            });
+            $('#details').modal('hide');
+            document.getElementById("btn-close-modal").style.display = "block";
+            document.getElementById('loader2').style.display = 'none';
+        })
+        .catch((error) => {
+            Swal.fire({
+                title: "Oops",
+                text: "Ocurrió un error!",
+                icon: "error"
+            });
+            document.getElementById("btn-close-modal").style.display = "block";
+            document.getElementById('loader2').style.display = 'none';
+        });
+    }
+}
+

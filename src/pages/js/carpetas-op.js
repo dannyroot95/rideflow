@@ -142,14 +142,16 @@ function showDetails(button,idFolder,timesUpdated) {
         <button onclick="send('${fileData.id}','${idFolder}','${fileData.idUserAssociation}','${fileData.timesObserved}','${timesUpdated}')" class="btn btn-success">Enviar</button>
     `
 
-    if(fileData.status == 'migrated'){
+    if(fileData.status == 'migrated' || fileData.status == 'corrected'){
         //addOn-observed btnCorect
         document.getElementById("addOn-observed").style = "display:none;"
         document.getElementById("btnCorrect").style = "display:flex;width:100%"
+        document.getElementById("txtObserved").disabled = false
 
     }else if (fileData.status == 'observed'){
         document.getElementById("addOn-observed").style = "display:flex;width:100%"
         document.getElementById("btnCorrect").style = "display:none;"
+        document.getElementById("txtObserved").disabled = true
         document.getElementById("txtObserved").value = fileData.txtNote
         document.getElementById("inputGroupSelectOperation").disabled = true
 
@@ -165,6 +167,8 @@ function getStatus(status){
         status = `<b style="color:#b49600;">Migrado</b>`
     }else if(status == "observed"){
         status = `<b style="color:#fc0000;">Observado</b>`
+    }else if(status == "corrected"){
+        status = `<b style="color:#009083;">Corregido</b>`
     }
     return status
 }
@@ -179,6 +183,9 @@ function getStatusFromDetails(status){
     }else if(status == "observed"){
         document.getElementById("status").style = "color:#fff;background-color: #fc0000;"
         status = `<b>Observado</b>`
+    }else if(status == "corrected"){
+        document.getElementById("status").style = "color:#fff;background-color: #009083;"
+        status = `<b>Corregido</b>`
     }
     return status
 }
@@ -209,10 +216,13 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder){
              firebase.firestore().collection("files").doc(idFile).update({
                 status: status,
                 txtNote : txtObserved,
-                timesObserved : parseInt(timesObserved)+1
+                timesObserved : parseInt(timesObserved)+1,
+                idFolder : idFolder
             });
             firebase.firestore().collection("folders").doc(idFolder).update({
-                timesUpdated: parseInt(timesUpdatedFolder)+1
+                timesUpdated: parseInt(timesUpdatedFolder)+1,
+                status : status,
+                dateRegister : Date.now()
             });
             Swal.fire({
                 title: "Muy bien",

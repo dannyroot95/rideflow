@@ -55,11 +55,24 @@
     font-size: 16px;
     color: #3a3a3a;
 }
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+@media (max-width: 800px) {
+    .card-container {
+        grid-template-columns: 1fr; /* Cambia a una sola columna en pantallas estrechas */
+    }
+}
+
 </style>
 
 <body>
 
-    <center><img src="/images/banner_icon_bg.png" width="600px"></center>
+    <center><div style="text-align: center;">
+        <img src="/images/banner_icon_bg.png" style="max-width: 100%;"></div></center>
 
     <div class="card-container">
     

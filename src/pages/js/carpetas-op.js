@@ -75,7 +75,7 @@ foldersCollection.onSnapshot(async (snapshot) => {
 
         filesSnapshot.forEach(fileDoc => {
             const fileData = fileDoc.data();
-            const details = `<center><button class="btn btn-light" style="background-color:#00b465;color:white;" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this,'${folderData.id}','${folderData.timesUpdated}')">Ver</button></center>`;
+            const details = `<center><button class="btn btn-light" style="background-color:#00b465;color:white;" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this,'${folderData.id}','${folderData.timesUpdated}','${folderData.codeFolder}','${fileData.code}')">Ver</button></center>`;
 
             // Añade filas a la tabla basado en los datos del archivo
             tableContent += `
@@ -122,7 +122,7 @@ foldersCollection.onSnapshot(async (snapshot) => {
 
 
 
-function showDetails(button,idFolder,timesUpdated) {
+function showDetails(button,idFolder,desk,code) {
     // Recupera el objeto user desde el atributo data-user del botón
     const fileData = JSON.parse(button.getAttribute('data-user'));
     $('#details').modal('show')
@@ -139,7 +139,8 @@ function showDetails(button,idFolder,timesUpdated) {
     document.getElementById("status").innerHTML = getStatus(fileData.status)
 
     document.getElementById("btnCorrect").innerHTML = `
-        <button onclick="send('${fileData.id}','${idFolder}','${fileData.idUserAssociation}','${fileData.timesObserved}','${timesUpdated}')" class="btn btn-success">Enviar</button>
+        <button onclick="send('${fileData.id}','${idFolder}','${fileData.idUserAssociation}','${fileData.timesObserved}',
+        '${fileData.timestamp}','${fileData.dni}','${desk}','${code}')" class="btn btn-success">Enviar</button>
     `
 
     if(fileData.status == 'migrated' || fileData.status == 'corrected'){
@@ -208,7 +209,7 @@ function obtenerHoraMinutoDesdeTimestamp(timestamp) {
     return `${horas}:${minutos}`; // Devuelve la hora en formato HH:mm
 }
 
-function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder){
+function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dniFile,desk,code){
     let status =  document.getElementById("inputGroupSelectOperation").value
     if(status == "observed"){
         let txtObserved = document.getElementById("txtObserved").value
@@ -217,13 +218,28 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder){
                 status: status,
                 txtNote : txtObserved,
                 timesObserved : parseInt(timesObserved)+1,
-                idFolder : idFolder
+                idFolder : idFolder,
+                idInCharge : user.id,
+                inCharge : user.name+' '+user.lastName
             });
             firebase.firestore().collection("folders").doc(idFolder).update({
                 timesUpdated: parseInt(timesUpdatedFolder)+1,
                 status : status,
                 dateRegister : Date.now()
             });
+
+            firebase.firestore().collection("notifications").add({
+                idFolder: idFolder,
+                name:user.name,
+                idUser : idAssociation,
+                title : `El expediente #${desk} ha sido observado por ${user.name} ${user.lastName}`,
+                type : "file",
+                content : `El expediente con DNI : ${dniFile} ha sido observado en la carpeta : ${code}`,
+                isOpen : false,
+                timestamp : Date.now()
+            });
+        
+
             Swal.fire({
                 title: "Muy bien",
                 text: "Expediente actualizado!",

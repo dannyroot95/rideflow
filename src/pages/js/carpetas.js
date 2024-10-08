@@ -148,7 +148,7 @@ function showDetails(button) {
         document.getElementById("txtObserved").style = "text-transform: uppercase;color:black;"
 
         document.getElementById("btnCorrect").innerHTML = `
-        <button id="btnSendCorrected" class="btn btn-success" onclick="sendOberved('${fileData.id}','${fileData.idFolder}')" >Enviar correción</button>`
+        <button id="btnSendCorrected" class="btn btn-success" onclick="sendOberved('${fileData.id}','${fileData.idFolder}','${fileData.idInCharge}','${fileData.folder}','${fileData.code}','${fileData.nameAssociation}')" >Enviar correción</button>`
 
     }
 
@@ -204,7 +204,7 @@ function obtenerHoraMinutoDesdeTimestamp(timestamp) {
 }
 
 // Función para enviar el archivo DNI escaneado a Firestore
-function sendOberved(idFile, idFolder) {
+function sendOberved(idFile, idFolder, idInCharge, desk, code,nameAssociation) {
     // Captura los valores de los campos
     const dni = document.getElementById('dni').value.trim();
     const name = document.getElementById('name').value.trim();
@@ -267,8 +267,21 @@ function sendOberved(idFile, idFolder) {
                         timestamp: Date.now() // Timestamp opcional
                     });
 
+                
                     firebase.firestore().collection('folders').doc(idFolder).update({ status: "corrected",dateRegister : Date.now()})
                         .then(() => {
+
+                            firebase.firestore().collection("notifications").add({
+                                idFolder: idFolder,
+                                name:user.name,
+                                idUser : idInCharge,
+                                title : `El expediente #${code} ha sido corregido`,
+                                type : "file",
+                                content : `La Asociacion ${nameAssociation} con el expediente #${code} ha sido corregido en la carpeta : ${desk}`,
+                                isOpen : false,
+                                timestamp : Date.now()
+                            });
+
                             Swal.fire({
                                 title: "Muy bien",
                                 text: "Expediente corregido!",
@@ -304,6 +317,17 @@ function sendOberved(idFile, idFolder) {
         })
         .then(() => {
             firebase.firestore().collection('folders').doc(idFolder).update({ status: "corrected" });
+
+            firebase.firestore().collection("notifications").add({
+                idFolder: idFolder,
+                name:user.name,
+                idUser : idInCharge,
+                title : `El expediente #${code} ha sido corregido`,
+                type : "file",
+                content : `La Asociacion ${nameAssociation} con el expediente #${code} ha sido corregido en la carpeta : ${desk}`,
+                isOpen : false,
+                timestamp : Date.now()
+            });
 
             Swal.fire({
                 title: "Muy bien",

@@ -228,9 +228,10 @@ document.getElementById('migrateExpedientes').addEventListener('click', async ()
         title : "Una nueva carpeta ha sido recibida!",
         type : "folder",
         content : `Se ha enviado ${visibleDnis.length} expedientes`,
-        isOpen : false
+        isOpen : false,
+        timestamp : Date.now()
     });
-
+    
         document.getElementById("loader-small").style = "display : none;"
         document.getElementById("addFile").disabled = false
         document.getElementById("migrateExpedientes").disabled = false

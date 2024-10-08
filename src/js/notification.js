@@ -53,6 +53,39 @@ function listenUnreadNotifications(userData) {
   // Puedes llamar a `unsubscribe()` para dejar de escuchar los cambios
 }
 
+function listenUnreadNotificationsForAssociation(userData) {
+  // Consulta de notificaciones donde isOpen es false
+  const q = db.collection("notifications")
+          .where("idUser" ,"==", userData)
+          .where("isOpen", "==", false);
+
+  // Escucha los cambios en tiempo real
+  const unsubscribe = q.onSnapshot((querySnapshot) => {
+    let count = 0;
+
+    querySnapshot.forEach((doc) => {
+      count++;
+    });
+
+    // Actualizar el contador de notificaciones no leídas
+    let previousCount = parseInt(document.getElementById("count").innerHTML)
+    document.getElementById("count").innerHTML = count;
+
+      
+    if (count > previousCount && previousCount != null) {
+      previousCount = count;
+      const audio = new Audio('/images/notify.mp3');
+      audio.play();
+    }
+
+ 
+  }, (error) => {
+    console.error("Error al obtener documentos en tiempo real:", error);
+  });
+
+  // Puedes llamar a `unsubscribe()` para dejar de escuchar los cambios
+}
+
 
 function listenAllNotifications(userData) {
   const q = db.collection("notifications").where("idUser", "in", ["", userData])
@@ -88,24 +121,51 @@ function listenAllNotifications(userData) {
   });
 }
 
+function listenAllNotificationsForAssociations(userData) {
+  const q = db.collection("notifications").where("idUser", "==", userData)
+  .orderBy("timestamp", "desc"); // Asegúrate de que el campo "timestamp" está indexado en Firestore
+
+  q.onSnapshot((snapshot) => {
+    const dataTable = $('#tb-data').DataTable();
+    dataTable.clear();
+    let count = 0;
+
+    snapshot.forEach((doc) => {
+      count++;
+      const notificationData = doc.data();
+      const details = `<center><button class="btn btn-primary" data-notification='${JSON.stringify(notificationData)}' onclick="showNotificationDetails('${doc.id}', this)">Ver</button></center>`;
+
+      let row = dataTable.row.add([
+        details,
+        count,
+        notificationData.title || "Sin título"
+      ]).draw(false).node();
+
+      // Resaltar filas donde isOpen es false
+      if (!notificationData.isOpen) {
+        $(row).css('background-color', '#f1fbff');
+      }
+    });
+
+    dataTable.draw();
+    dataTable.columns.adjust().draw();
+ 
+  }, (error) => {
+    console.error("Error al obtener documentos: ", error);
+  });
+}
 
 
 // Función para mostrar detalles de la notificación y actualizar su estado
 function showNotificationDetails(notificationId, notificationData) {
   // Aquí puedes personalizar cómo mostrar los detalles de la notificación
   // Por ejemplo, puedes usar otro modal o actualizar un área específica del DOM
-  alert(`Detalles de la notificación: ${notificationData.title}\n${notificationData.body || "Sin contenido adicional."}`);
-
-  // Actualizar el estado de la notificación a isOpen: true
-  db.collection("notifications").doc(notificationId).update({
-    isOpen: true
-  })
-  .then(() => {
-    console.log("Notificación actualizada correctamente.");
-  })
-  .catch((error) => {
-    console.error("Error al actualizar la notificación:", error);
-  });
+  $('#notificationModalDetail').modal('show');
+  const data = JSON.parse(notificationData.getAttribute('data-notification'));
+  db.collection("notifications").doc(notificationId).update({isOpen: true})
+  document.getElementById("title").innerHTML = data.title
+  document.getElementById("association").value = data.name
+  document.getElementById("content").value = data.content
 }
 
 function createDatatable() {
@@ -158,7 +218,9 @@ Swal.fire({
       // Escuchar todas las notificaciones y llenar la tabla
       listenAllNotifications(user.id);
     } else {
-      document.getElementById("count").innerHTML = "0";
+      listenUnreadNotificationsForAssociation(user.id);
+      // Escuchar todas las notificaciones y llenar la tabla
+      listenAllNotificationsForAssociations(user.id);
     }
   } else {
     // Usuario rechaza recibir notificaciones, gestionar adecuadamente

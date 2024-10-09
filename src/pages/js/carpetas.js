@@ -132,6 +132,26 @@ function showDetails(button) {
         document.getElementById("addOn-observed").style = "display:none;"
         document.getElementById("btnCorrect").style = "display:none;"
         document.getElementById("btnCorrect").innerHTML = ``
+    }else if(fileData.status != "certificated"){
+        document.getElementById("dni").disabled = true
+        document.getElementById("dni-addon-file").style.display = "none"
+        document.getElementById("dniFile").style.display = "none"
+        document.getElementById("dniFile").disabled = true
+        document.getElementById("email").disabled = true
+        document.getElementById("phone").disabled = true
+
+
+        document.getElementById("addOn-observed").style = "display:none;"
+        document.getElementById("btnCorrect").style = "display:none;"
+        document.getElementById("btnCorrect").innerHTML = ``
+        document.getElementById("div-content-certificated").innerHTML = `<span class="input-group-text">Certificado de capacitación</span>
+                            <span style="background-color: #00a822;color: #ffffff;" class="input-group-text">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                  </svg>
+                                &nbsp;  
+                                <a id="linkDownloadCertificated" style="color: #ffffff;text-decoration: none;" href="" target="_blank">Descargar</a></span>`
     }else{
 
         document.getElementById("dni").disabled = false
@@ -164,6 +184,8 @@ function getStatus(status){
         status = `<b style="color:#fc0000;">Observado</b>`
     }else if(status == "corrected"){
         status = `<b style="color:#009083;">Corregido</b>`
+    }else if(status == "acepted"){
+        status = `<b style="color:#9bfc00;">Aceptado</b>`
     }
     return status
 }
@@ -181,6 +203,9 @@ function getStatusFromDetails(status){
     }else if(status == "corrected"){
         document.getElementById("status").style = "color:#fff;background-color: #009083;"
         status = `<b>Corregido</b>`
+    }else if(status == "acepted"){
+        document.getElementById("status").style = "color:#fff;background-color: #9bfc00;"
+        status = `<b>Aceptado</b>`
     }
     return status
 }

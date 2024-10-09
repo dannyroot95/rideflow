@@ -148,6 +148,7 @@ function showDetails(button,idFolder,desk,code) {
         document.getElementById("addOn-observed").style = "display:none;"
         document.getElementById("btnCorrect").style = "display:flex;width:100%"
         document.getElementById("txtObserved").disabled = false
+        document.getElementById("div-content-certificated").innerHTML = ``
 
     }else if (fileData.status == 'observed'){
         document.getElementById("addOn-observed").style = "display:flex;width:100%"
@@ -155,7 +156,16 @@ function showDetails(button,idFolder,desk,code) {
         document.getElementById("txtObserved").disabled = true
         document.getElementById("txtObserved").value = fileData.txtNote
         document.getElementById("inputGroupSelectOperation").disabled = true
+        document.getElementById("div-content-certificated").innerHTML = ``
 
+    }else if(fileData.status == 'acepted'){
+        document.getElementById("addOn-observed").style = "display:none;"
+        document.getElementById("btnCorrect").style = "display:flex;width:100%"
+        document.getElementById("txtObserved").disabled = false
+        document.getElementById("div-content-certificated").innerHTML = `
+           <span class="input-group-text" style="font-weight: 600;color: #186901;" id="certificated-addon-file">
+           Certificado de capacitación</span>
+           <input type="file" class="form-control" id="certificatedFile">`
     }
 
 }
@@ -170,6 +180,8 @@ function getStatus(status){
         status = `<b style="color:#fc0000;">Observado</b>`
     }else if(status == "corrected"){
         status = `<b style="color:#009083;">Corregido</b>`
+    }else if(status == "acepted"){
+        status = `<b style="color:#9bfc00;">Aceptado</b>`
     }
     return status
 }
@@ -187,6 +199,9 @@ function getStatusFromDetails(status){
     }else if(status == "corrected"){
         document.getElementById("status").style = "color:#fff;background-color: #009083;"
         status = `<b>Corregido</b>`
+    }else if(status == "acepted"){
+        document.getElementById("status").style = "color:#fff;background-color: #9bfc00;"
+        status = `<b>Aceptado</b>`
     }
     return status
 }
@@ -242,7 +257,7 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
 
             Swal.fire({
                 title: "Muy bien",
-                text: "Expediente actualizado!",
+                text: "Expediente observado!",
                 icon: "success"
             });
             $('#details').modal('hide')
@@ -254,6 +269,33 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
             });
         }
 
+    }else if(status == "acepted"){
+        firebase.firestore().collection("files").doc(idFile).update({
+            status: status,
+            idFolder : idFolder,
+            idInCharge : user.id,
+            inCharge : user.name+' '+user.lastName
+        });
+        firebase.firestore().collection("folders").doc(idFolder).update({
+            status : status,
+            dateRegister : Date.now()
+        });
+        firebase.firestore().collection("notifications").add({
+            idFolder: idFolder,
+            name:user.name,
+            idUser : idAssociation,
+            title : `El expediente #${desk} ha sido aceptado exitosamente`,
+            type : "file",
+            content : `El expediente con DNI : ${dniFile} ha sido aceptado , ahora debe pasar por la capacitación , una vez capacitado se subirá su constancia y se le notificará.`,
+            isOpen : false,
+            timestamp : Date.now()
+        });
+        Swal.fire({
+            title: "Muy bien",
+            text: "Expediente aceptado!",
+            icon: "success"
+        });
+        $('#details').modal('hide')
     }
 }
 

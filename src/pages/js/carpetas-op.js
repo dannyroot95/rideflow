@@ -139,18 +139,21 @@ function showDetails(button,idFolder,desk,code) {
     document.getElementById("status").innerHTML = getStatus(fileData.status)
 
     document.getElementById("btnCorrect").innerHTML = `
-        <button onclick="send('${fileData.id}','${idFolder}','${fileData.idUserAssociation}','${fileData.timesObserved}',
+        <button id="btn-add-user" onclick="send('${fileData.id}','${idFolder}','${fileData.idUserAssociation}','${fileData.timesObserved}',
         '${fileData.timestamp}','${fileData.dni}','${desk}','${code}')" class="btn btn-success">Enviar</button>
     `
 
     if(fileData.status == 'migrated' || fileData.status == 'corrected'){
+        optionsNormal()
         //addOn-observed btnCorect
+        document.getElementById("inputGroupSelectOperation").disabled = false
         document.getElementById("addOn-observed").style = "display:none;"
         document.getElementById("btnCorrect").style = "display:flex;width:100%"
         document.getElementById("txtObserved").disabled = false
         document.getElementById("div-content-certificated").innerHTML = ``
 
     }else if (fileData.status == 'observed'){
+        optionsNormal()
         document.getElementById("addOn-observed").style = "display:flex;width:100%"
         document.getElementById("btnCorrect").style = "display:none;"
         document.getElementById("txtObserved").disabled = true
@@ -159,6 +162,8 @@ function showDetails(button,idFolder,desk,code) {
         document.getElementById("div-content-certificated").innerHTML = ``
 
     }else if(fileData.status == 'acepted'){
+        agregarOpcion()
+        document.getElementById("inputGroupSelectOperation").disabled = false
         document.getElementById("addOn-observed").style = "display:none;"
         document.getElementById("btnCorrect").style = "display:flex;width:100%"
         document.getElementById("txtObserved").disabled = false
@@ -166,6 +171,20 @@ function showDetails(button,idFolder,desk,code) {
            <span class="input-group-text" style="font-weight: 600;color: #186901;" id="certificated-addon-file">
            Certificado de capacitación</span>
            <input type="file" class="form-control" id="certificatedFile">`
+
+        document.getElementById("div-content-resolution").innerHTML = `
+           <span class="input-group-text" style="font-weight: 600;color: #a80084;" id="resolution-addon-file">
+           N° de Resolución de SubGerencia</span>
+           <input type="text" style="text-transform:uppercase;" placeholder="001-2024-MPT-GSC-SGSVYT" class="form-control" id="resolutionNum">  
+           <input type="file" class="form-control" id="resolutionFile">`   
+    }else if(fileData.status == 'aproved'){
+        optionsNormal()
+        document.getElementById("inputGroupSelectOperation").disabled = true
+        //addOn-observed btnCorect
+        document.getElementById("addOn-observed").style = "display:none;"
+        document.getElementById("btnCorrect").style = "display:flex;width:100%"
+        document.getElementById("txtObserved").disabled = false
+        document.getElementById("div-content-certificated").innerHTML = ``
     }
 
 }
@@ -182,6 +201,8 @@ function getStatus(status){
         status = `<b style="color:#009083;">Corregido</b>`
     }else if(status == "acepted"){
         status = `<b style="color:#9bfc00;">Aceptado</b>`
+    }else if(status == "aproved"){
+        status = `<b style="color:#00356d;">Aprobado</b>`
     }
     return status
 }
@@ -202,6 +223,9 @@ function getStatusFromDetails(status){
     }else if(status == "acepted"){
         document.getElementById("status").style = "color:#fff;background-color: #9bfc00;"
         status = `<b>Aceptado</b>`
+    }else if(status == "aproved"){
+        document.getElementById("status").style = "color:#fff;background-color: #00356d;"
+        status = `<b>Aprobado</b>`
     }
     return status
 }
@@ -282,7 +306,7 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
         });
         firebase.firestore().collection("notifications").add({
             idFolder: idFolder,
-            name:user.name,
+            name:user.name +' '+user.lastName,
             idUser : idAssociation,
             title : `El expediente #${desk} ha sido aceptado exitosamente`,
             type : "file",
@@ -296,9 +320,119 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
             icon: "success"
         });
         $('#details').modal('hide')
+    }else if (status === "aproved") {
+        const certificatedFile = document.getElementById("certificatedFile").files[0];
+        const resolutionFile = document.getElementById("resolutionFile").files[0];
+        const numResolution = document.getElementById("resolutionNum").value
+    
+        if (certificatedFile && resolutionFile) {
+
+            if(numResolution == ""){
+                Swal.fire({
+                    title: "Oops",
+                    text: "Ingrese el número de la resolución!",
+                    icon: "warning"
+                });
+                return;
+            }
+
+            disable();
+    
+            const uploadFile = (path, file) => {
+                const storageRef = firebase.storage().ref();
+                const fileRef = storageRef.child(path);
+                return fileRef.put(file).then(() => fileRef.getDownloadURL());
+            };
+    
+            uploadFile(`folders/${desk}/certificated/`, certificatedFile)
+                .then(fileURL => {
+                    return uploadFile(`folders/${desk}/resolutions/`, resolutionFile).then(fileURL2 => {
+                        const updates = firebase.firestore().collection("files").doc(idFile).update({
+                            fileUrlCertificated: fileURL,
+                            fileUrlResolution: fileURL2,
+                            status : "aproved",
+                            numResolution : numResolution
+                        });
+    
+                        return Promise.all([updates, fileURL, fileURL2]);
+                    });
+                })
+                .then(() => {
+                    return firebase.firestore().collection("folders").doc(idFolder).update({
+                        status: "aproved",
+                        dateRegister: Date.now()
+                    }).then(() => ({
+                        //
+                    }));
+                })
+                .then(() => {
+                    return firebase.firestore().collection("notifications").add({
+                        idFolder: idFolder,
+                        name: user.name +' '+user.lastName,
+                        idUser: idAssociation,
+                        title: `El expediente #${desk} ha sido aprobado!`,
+                        type: "file",
+                        content: `El expediente con DNI: ${dniFile} ha sido aprobado, apersonece a ventanilla a recojer su tarjeta de operación.`,
+                        isOpen: false,
+                        timestamp: Date.now()
+                    });
+                })
+                .then(() => {
+                    Swal.fire({
+                        title: "Muy bien",
+                        text: "Expediente aceptado!",
+                        icon: "success"
+                    });
+                    enable();
+                    $('#details').modal('hide')
+                })
+                .catch(error => {
+                    console.error("Error updating the documents:", error);
+                      enable();
+                    Swal.fire({
+                        title: "Error",
+                        text: "Hubo un problema al procesar su solicitud.",
+                        icon: "error"
+                    });
+                });
+        } else {
+            Swal.fire({
+                title: "Oops",
+                text: "Suba los archivos necesarios!",
+                icon: "warning"
+            });
+        }
+    }
+    else if(status == "none"){
+        Swal.fire({
+            title: "Oops",
+            text: "Selecione una opción!",
+            icon: "warning"
+        });
     }
 }
 
-function sendNotification(){
+function agregarOpcion() {
+    document.getElementById("inputGroupSelectOperation").innerHTML = ` <option value="none" selected disabled>seleccione una opcion...</option>
+                              <option style="color: #0043a8;" value="aproved">Aprobar</option>
+                              <option value="denied">Rechazar</option>`
+}
 
+function optionsNormal() {
+    document.getElementById("inputGroupSelectOperation").innerHTML = ` <option value="none" selected disabled>seleccione una opcion...</option>
+                              <option style="color: #0043a8;" value="acepted">Aceptar</option>
+                              <option style="color: #fc0000;" value="observed">Observar</option>
+                              <option value="denied">Rechazar</option>`
+}
+
+function enable(){
+    document.getElementById("btn-close-modal").style.display = "block"
+    document.getElementById("btn-add-user").style.display = "block"
+    document.getElementById("loader2").style.display = "none"
+}
+
+function disable(){
+    document.getElementById("btn-close-modal").style.display = "none"
+    document.getElementById("btn-add-user").style.display = "none"
+    document.getElementById("loader2").style.display = "block"
 }

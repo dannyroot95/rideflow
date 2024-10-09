@@ -186,6 +186,10 @@ function getStatus(status){
         status = `<b style="color:#009083;">Corregido</b>`
     }else if(status == "acepted"){
         status = `<b style="color:#9bfc00;">Aceptado</b>`
+    }else if(status == "aproved"){
+        status = `<b style="color:#00356d;">Aprobado</b>`
+    }else if(status == "denied"){
+        status = `<b style="color:#fc0000;">Rechazado</b>`
     }
     return status
 }
@@ -206,6 +210,9 @@ function getStatusFromDetails(status){
     }else if(status == "acepted"){
         document.getElementById("status").style = "color:#fff;background-color: #9bfc00;"
         status = `<b>Aceptado</b>`
+    }else if(status == "aproved"){
+        document.getElementById("status").style = "color:#fff;background-color: #00356d;"
+        status = `<b>Aprobado</b>`
     }
     return status
 }

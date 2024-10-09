@@ -308,6 +308,8 @@ function getStatus(status){
         status = `<b style="color:#009083;">Corregido</b>`
     }else if(status == "acepted"){
         status = `<b style="color:#9bfc00;">Aceptado</b>`
+    }else if(status == "aproved"){
+        status = `<b style="color:#00356d;">Aprobado</b>`
     }
     return status
 }

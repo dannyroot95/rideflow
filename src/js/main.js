@@ -11,6 +11,8 @@ $(document).ready(function () {
         gotoPage("inicio-asoc","Inicio","inicio-asoc");
     }else if(user.typeUser == "operator"){
         gotoPage("inicio-asoc","Inicio","inicio-asoc");
+    }else if(user.typeUser == "window"){
+        gotoPage("inicio-asoc","Inicio","inicio-asoc");
     }
     window.addEventListener('hashchange', handleHashChange);  // Detectar cambios en el hash
     sidebarList.addEventListener('click', handleSidebarClick);  // Manejar clics en la barra lateral
@@ -36,13 +38,20 @@ function handleHashChange() {
             break;    
         case '#expedientes':
             gotoPage("expedientes","Expedientes","expedientes");
-            break;      
+            break;  
+        case '#expedientes-aprobados':
+                gotoPage("expedientes-aprobados","Expedientes aprobados","expedientes-aprobados");
+                break;         
         case '#carpetas':
             gotoPage("carpetas","Carpetas","carpetas");
             break;   
         case '#carpetas-op':
             gotoPage("carpetas-op","Carpetas","carpetas-op");
-            break;                     
+            break;    
+        case '#tarjetas-de-operacion-v':
+            gotoPage("tarjetas-de-operacion-v","Tarjetas de operación","tarjetas-de-operacion-v");
+            break;      
+                      
         default:
             routeErrE();
             break;
@@ -116,6 +125,8 @@ function insertData(user) {
         ? "Asociación"
         : user.typeUser === "operator"
         ? "Operador"
+        : user.typeUser === "window"
+        ? "Ventanilla"
         : "Sin datos";
 
 }

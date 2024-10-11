@@ -102,6 +102,17 @@ function updateDetailsModal(fileData) {
     document.getElementById("name").value = fileData.name;
     document.getElementById("email").value = fileData.email;
     document.getElementById("phone").value = fileData.phone;
+
+    document.getElementById("brand").value = fileData.brand
+    document.getElementById("model").value = fileData.model
+    document.getElementById("plate").value = fileData.plate
+    document.getElementById("yearBuild").value = fileData.yearBuild
+    document.getElementById("category").value = fileData.category
+    document.getElementById("numSerieVehicle").value = fileData.numSerieVehicle
+    document.getElementById("numEngine").value = fileData.numEngine
+    document.getElementById("color").value = fileData.color
+    document.getElementById("codeVest").value = fileData.codeVest
+
     document.getElementById("linkDownloadDNI").href = fileData.fileUrlDNI;
     document.getElementById("linkDownloadCertificated").href = fileData.fileUrlCertificated;
     document.getElementById("linkDownloadResolution").href = fileData.fileUrlResolution;
@@ -141,7 +152,19 @@ async function generate(file) {
             numCardOperation: numCardOperation,  // Genera un número de tarjeta basado en el tamaño actual
             dateGenerated: formattedDateGenerated,
             expiryDate: formattedExpiryDate,
-            numResolution : (fileData.numResolution).toUpperCase()  // Almacena la fecha/hora actual
+            numResolution : (fileData.numResolution).toUpperCase(),  // Almacena la fecha/hora actual
+            brand:fileData.brand,
+            model:fileData.model,
+            plate:fileData.plate,
+            yearBuild:fileData.yearBuild,
+            numSerieVehicle:fileData.numSerieVehicle,
+            numEngine:fileData.numEngine,
+            color:fileData.color,
+            codeVest:fileData.codeVest,
+            category:fileData.category,
+            idGeneratedBy : user.id,
+            nameGeneratedBy : user.name+' '+user.lastName,
+            nameAssociation : fileData.nameAssociation
         });
         
         // Actualiza el documento recién creado con su propio ID

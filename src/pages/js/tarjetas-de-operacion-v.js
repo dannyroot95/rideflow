@@ -95,33 +95,58 @@ function updateDetailsModal(fileData) {
     var image = new Image();
     image.src = "/images/t-operacion.png"; // Asegúrate de que la ruta es accesible
     image.onload = function() {
-        // Posicionar la imagen para que esté centrada en la parte superior de la tarjeta
-        const imgWidth = 90; // El ancho de la imagen debe cubrir el ancho del PDF
-        const imgHeight = 132; // Altura de la imagen ajustada para cubrir la mitad superior
-        const x = 0;
-        const y = 0;
 
-        // Añadir la imagen cuando esté completamente cargada
 
-        doc.addImage(image, 'PNG', x, y, imgWidth, imgHeight);
-        doc.setFontSize(7);
-        doc.setTextColor("#FC0000");
-        doc.text('N° '+fileData.numCardOperation,37,25);
-        doc.setFontSize(7);
-        doc.setTextColor("#000000");
-        doc.text(fileData.name,4,33);
+        var canvas = document.createElement('canvas');
+        QRCode.toCanvas(canvas, fileData.id, function (error) {
+            if (error) console.error('Error al crear QR: ', error);
+            var imgData = canvas.toDataURL('image/png');
+       // Posicionar la imagen para que esté centrada en la parte superior de la tarjeta
+       const imgWidth = 90; // El ancho de la imagen debe cubrir el ancho del PDF
+       const imgHeight = 132; // Altura de la imagen ajustada para cubrir la mitad superior
+       const x = 0;
+       const y = 0;
 
-        // Exportar el PDF a un blob
-        const pdfBlob = doc.output('blob');
+       // Añadir la imagen cuando esté completamente cargada
 
-        // Crear un URL para el blob
-        const url = URL.createObjectURL(pdfBlob);
+       doc.addImage(image, 'PNG', x, y, imgWidth, imgHeight);
+       doc.setFontSize(7);
+       doc.setTextColor("#FC0000");
+       doc.text('N° '+fileData.numCardOperation,35.5,25);
+       doc.setFontSize(6);
+       doc.setTextColor("#535353");
 
-        // Mostrar el PDF en el iframe del modal
-        document.getElementById('pdfFrame').src = url;
+       doc.text(fileData.nameAssociation,4,33);
+       doc.text((fileData.plate).toUpperCase(),4,41.3);
+       doc.text(fileData.yearBuild,4,48.6);
+       doc.text((fileData.numSerieVehicle).toUpperCase(),4,56.5);
+       doc.text((fileData.numEngine).toUpperCase(),4,64);
 
-        // Mostrar el modal
-        $('#details').modal('show');
+       doc.text((fileData.numResolution).toUpperCase(),52.5,35);
+       doc.text((fileData.brand + ' - ' +fileData.model).toUpperCase(),52.5,42.5);
+       doc.text((fileData.color).toUpperCase(),52.5,48.5);
+       doc.text((fileData.category).toUpperCase(),52.5,55);
+       doc.text(fileData.dateGenerated,52,61);
+       doc.text(fileData.expiryDate,71.5,61);
+
+       doc.text((fileData.codeVest).toUpperCase(),29,88.5);
+       doc.addImage(imgData, 'PNG', 52.5, 82, 12, 12); // Ajusta las coordenadas y tamaño según necesites
+
+       doc.setFontSize(5);
+       doc.text(fileData.yearBuild+fileData.dni,66,88.5);
+       doc.text(formatDateToDDMMYYYY(Date.now())+' '+obtenerHoraMinutoDesdeTimestamp(Date.now()),66,94.5);
+
+       // Exportar el PDF a un blob
+       const pdfBlob = doc.output('blob');
+       // Crear un URL para el blob
+       const url = URL.createObjectURL(pdfBlob);
+       // Mostrar el PDF en el iframe del modal
+       document.getElementById('pdfFrame').src = url;
+       // Mostrar el modal
+       $('#details').modal('show');
+            // Añadir la imagen QR al PDF
+
+        });
     };
     image.onerror = function() {
         console.error("Error loading the image.");

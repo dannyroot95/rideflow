@@ -75,7 +75,7 @@ foldersCollection.onSnapshot(async (snapshot) => {
 
         filesSnapshot.forEach(fileDoc => {
             const fileData = fileDoc.data();
-            const details = `<center><button class="btn btn-light" style="background-color:#00b465;color:white;" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this,'${folderData.id}','${folderData.timesUpdated}','${folderData.codeFolder}','${fileData.code}')">Ver</button></center>`;
+            const details = `<center><button class="btn btn-light" style="background-color:#00b465;color:white;" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this,'${folderData.id}')">Ver</button></center>`;
 
             // Añade filas a la tabla basado en los datos del archivo
             tableContent += `
@@ -122,7 +122,7 @@ foldersCollection.onSnapshot(async (snapshot) => {
 
 
 
-function showDetails(button,idFolder,desk,code) {
+function showDetails(button,idFolder) {
     // Recupera el objeto user desde el atributo data-user del botón
     const fileData = JSON.parse(button.getAttribute('data-user'));
     $('#details').modal('show')
@@ -133,6 +133,17 @@ function showDetails(button,idFolder,desk,code) {
     document.getElementById("name").value = fileData.name
     document.getElementById("email").value = fileData.email
     document.getElementById("phone").value = fileData.phone
+
+    document.getElementById("brand").value = fileData.brand
+    document.getElementById("model").value = fileData.model
+    document.getElementById("plate").value = fileData.plate
+    document.getElementById("yearBuild").value = fileData.yearBuild
+    document.getElementById("category").value = fileData.category
+    document.getElementById("numSerieVehicle").value = fileData.numSerieVehicle
+    document.getElementById("numEngine").value = fileData.numEngine
+    document.getElementById("color").value = fileData.color
+    document.getElementById("codeVest").value = fileData.codeVest
+
     document.getElementById("linkDownloadDNI").href = fileData.fileUrlDNI
 
     document.getElementById("timesObserved").innerHTML = fileData.timesObserved
@@ -140,7 +151,7 @@ function showDetails(button,idFolder,desk,code) {
 
     document.getElementById("btnCorrect").innerHTML = `
         <button id="btn-add-user" onclick="send('${fileData.id}','${idFolder}','${fileData.idUserAssociation}','${fileData.timesObserved}',
-        '${fileData.timestamp}','${fileData.dni}','${desk}','${code}')" class="btn btn-success">Enviar</button>
+        '${fileData.timestamp}','${fileData.dni}','${fileData.folder}','${fileData.code}')" class="btn btn-success">Enviar</button>
     `
 
     if(fileData.status == 'migrated' || fileData.status == 'corrected'){
@@ -269,11 +280,11 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
 
             firebase.firestore().collection("notifications").add({
                 idFolder: idFolder,
-                name:user.name,
+                name:user.name+''+user.lastName,
                 idUser : idAssociation,
-                title : `El expediente #${desk} ha sido observado por ${user.name} ${user.lastName}`,
+                title : `El expediente #${code} ha sido observado por ${user.name} ${user.lastName}`,
                 type : "file",
-                content : `El expediente con DNI : ${dniFile} ha sido observado en la carpeta : ${code}`,
+                content : `El expediente con DNI : ${dniFile} ha sido observado en la carpeta : ${desk}`,
                 isOpen : false,
                 timestamp : Date.now()
             });
@@ -321,6 +332,7 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
         });
         $('#details').modal('hide')
     }else if (status === "aproved") {
+        
         const certificatedFile = document.getElementById("certificatedFile").files[0];
         const resolutionFile = document.getElementById("resolutionFile").files[0];
         const numResolution = document.getElementById("resolutionNum").value
@@ -344,9 +356,9 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
                 return fileRef.put(file).then(() => fileRef.getDownloadURL());
             };
     
-            uploadFile(`folders/${desk}/certificated/`, certificatedFile)
+            uploadFile(`folders/${code}/certificated/`, certificatedFile)
                 .then(fileURL => {
-                    return uploadFile(`folders/${desk}/resolutions/`, resolutionFile).then(fileURL2 => {
+                    return uploadFile(`folders/${code}/resolutions/`, resolutionFile).then(fileURL2 => {
                         const updates = firebase.firestore().collection("files").doc(idFile).update({
                             fileUrlCertificated: fileURL,
                             fileUrlResolution: fileURL2,
@@ -370,7 +382,7 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
                         idFolder: idFolder,
                         name: user.name +' '+user.lastName,
                         idUser: idAssociation,
-                        title: `El expediente #${desk} ha sido aprobado!`,
+                        title: `El expediente #${code} ha sido aprobado!`,
                         type: "file",
                         content: `El expediente con DNI: ${dniFile} ha sido aprobado, apersonece a ventanilla a recojer su tarjeta de operación.`,
                         isOpen: false,

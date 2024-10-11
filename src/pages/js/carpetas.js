@@ -117,6 +117,16 @@ function showDetails(button) {
     document.getElementById("email").value = fileData.email
     document.getElementById("phone").value = fileData.phone
 
+    document.getElementById("brand").value = fileData.brand
+    document.getElementById("model").value = fileData.model
+    document.getElementById("plate").value = fileData.plate
+    document.getElementById("yearBuild").value = fileData.yearBuild
+    document.getElementById("category").value = fileData.category
+    document.getElementById("numSerieVehicle").value = fileData.numSerieVehicle
+    document.getElementById("numEngine").value = fileData.numEngine
+    document.getElementById("color").value = fileData.color
+    document.getElementById("codeVest").value = fileData.codeVest
+
     document.getElementById("status").innerHTML = getStatusFromDetails(fileData.status)
 
     if(fileData.status != "observed"){
@@ -128,17 +138,39 @@ function showDetails(button) {
         document.getElementById("email").disabled = true
         document.getElementById("phone").disabled = true
 
+        document.getElementById("brand").disabled = true
+        document.getElementById("model").disabled = true
+        document.getElementById("plate").disabled = true
+        document.getElementById("yearBuild").disabled = true
+        document.getElementById("category").disabled = true
+        document.getElementById("numSerieVehicle").disabled = true
+        document.getElementById("numEngine").disabled = true
+        document.getElementById("color").disabled = true
+        document.getElementById("codeVest").disabled = true
+
 
         document.getElementById("addOn-observed").style = "display:none;"
         document.getElementById("btnCorrect").style = "display:none;"
         document.getElementById("btnCorrect").innerHTML = ``
-    }else if(fileData.status != "certificated"){
+
+    }else if(fileData.status == "certificated"){
+
         document.getElementById("dni").disabled = true
         document.getElementById("dni-addon-file").style.display = "none"
         document.getElementById("dniFile").style.display = "none"
         document.getElementById("dniFile").disabled = true
         document.getElementById("email").disabled = true
         document.getElementById("phone").disabled = true
+        document.getElementById("brand").disabled = true
+        document.getElementById("model").disabled = true
+        document.getElementById("plate").disabled = true
+        document.getElementById("yearBuild").disabled = true
+        document.getElementById("category").disabled = true
+        document.getElementById("numSerieVehicle").disabled = true
+        document.getElementById("numEngine").disabled = true
+        document.getElementById("color").disabled = true
+        document.getElementById("codeVest").disabled = true
+
 
 
         document.getElementById("addOn-observed").style = "display:none;"
@@ -160,6 +192,16 @@ function showDetails(button) {
         document.getElementById("dniFile").disabled = false
         document.getElementById("email").disabled = false
         document.getElementById("phone").disabled = false
+
+        document.getElementById("brand").disabled = false
+        document.getElementById("model").disabled = false
+        document.getElementById("plate").disabled = false
+        document.getElementById("yearBuild").disabled = false
+        document.getElementById("category").disabled = false
+        document.getElementById("numSerieVehicle").disabled = false
+        document.getElementById("numEngine").disabled = false
+        document.getElementById("color").disabled = false
+        document.getElementById("codeVest").disabled = false
 
         document.getElementById("addOn-observed").style = "display:flex;width:100%"
         document.getElementById("btnCorrect").style = "display:flex;width:100%"

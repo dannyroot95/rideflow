@@ -212,15 +212,19 @@ Swal.fire({
 }).then((result) => {
   if (result.isConfirmed) {
     // Usuario acepta recibir notificaciones
-    if(user.typeUser != "association"){
+    if(user.typeUser == "association"){
+      listenUnreadNotificationsForAssociation(user.id);
+      // Escuchar todas las notificaciones y llenar la tabla
+      listenAllNotificationsForAssociations(user.id);
+
+    }else if(user.typeUser == "window"){
+      //IMPLEMENTAR NOTIFICACIONES PARA VENTANILLA
+      document.getElementById("count").innerHTML = "0";
+    } else {
       // Escuchar solo notificaciones no leídas y actualizar el contador
       listenUnreadNotifications(user.id);
       // Escuchar todas las notificaciones y llenar la tabla
       listenAllNotifications(user.id);
-    } else {
-      listenUnreadNotificationsForAssociation(user.id);
-      // Escuchar todas las notificaciones y llenar la tabla
-      listenAllNotificationsForAssociations(user.id);
     }
   } else {
     // Usuario rechaza recibir notificaciones, gestionar adecuadamente

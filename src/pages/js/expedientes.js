@@ -46,7 +46,16 @@ usersCollection.where("association", "==", user.ruc).onSnapshot((snapshot) => {
     
     snapshot.forEach((doc, index) => {
         const fileData = doc.data();
-        const details = `<center><button class="btn btn-light" style="background-color:#093e00;color:white;" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this)">Ver</button></center>`;
+        let details = `<center><button class="btn btn-light" 
+        style="background-color:#093e00;color:white;" data-user='${JSON.stringify(fileData)}' 
+        onclick="showDetails(this)">Ver</button></center>`;
+        
+        if(fileData.status == "registered"){
+            details = `<center><button class="btn btn-light" 
+            style="background-color:#093e00;color:white;" data-user='${JSON.stringify(fileData)}' 
+            onclick="showDetails(this)">Ver</button>&nbsp;&nbsp;<button onclick="deleteFile('${fileData.id}')" class="btn btn-danger">Eliminar</button></center>`;
+        }
+        
         let status = getStatus(fileData.status)
 
         
@@ -87,6 +96,15 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
     const dni = document.getElementById("dni").value;
     const phone = document.getElementById("phone").value;
     const dniFile = document.getElementById("dniFile").files[0];
+    const brand = document.getElementById("brand").value;
+    const model = document.getElementById("model").value;
+    const plate = document.getElementById("plate").value;
+    const yearBuild = document.getElementById("yearBuild").value;
+    const numSerieVehicle = document.getElementById("numSerieVehicle").value;
+    const numEngine = document.getElementById("numEngine").value;
+    const color = document.getElementById("color").value;
+    const codeVest = document.getElementById("codeVest").value;
+    const category = document.getElementById("category").value;
 
     try {
         disable();
@@ -131,7 +149,18 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
             dateRegister : Date.now(),
             timesObserved : 0,
             idUserAssociation : user.id,
-            idFolder : ""
+            idFolder : "",
+            brand:brand,
+            model:model,
+            plate:plate,
+            yearBuild:yearBuild,
+            numSerieVehicle:numSerieVehicle,
+            numEngine:numEngine,
+            color:color,
+            codeVest:codeVest,
+            category:category,
+            nameAssociation : user.association
+
         });
 
         // Opcional: Actualizar el documento con el ID si es necesario
@@ -159,102 +188,125 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
 });
 
 document.getElementById('migrateExpedientes').addEventListener('click', async () => {
-    const userData = JSON.parse(localStorage.getItem("userData"));  // Asegúrate de tener esta info almacenada
-    const dataTable = $('#tb-data').DataTable();  // Asegúrate de que esta es la instancia correcta de tu DataTable
-    const filesCollection = db.collection('files');
-    const foldersCollection = db.collection('folders');
 
-    try {
-        // Obtener los DNIs visibles en la tabla cuyo estado es "Registrado"
-        const visibleDnis = [];
-        dataTable.rows({ search: 'applied' }).data().each(function (value, index) {
-            if (value[6] === `<b style="color:#048e34;">Registrado</b>`) {  // Asumiendo que el estado está en la sexta columna
-                visibleDnis.push(value[3]);  // Asumiendo que el DNI está en la cuarta columna
-            }
-        });
+    Swal.fire({
+        title: "¿Estás seguro de migrar los expedientes?",
+        showDenyButton: true,
+        confirmButtonText: "Sí",
+        denyButtonText: `No`
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const userData = JSON.parse(localStorage.getItem("userData"));  // Asegúrate de tener esta info almacenada
+            const dataTable = $('#tb-data').DataTable();  // Asegúrate de que esta es la instancia correcta de tu DataTable
+            const filesCollection = db.collection('files');
+            const foldersCollection = db.collection('folders');
 
-          // Comprobar si hay DNIs con estado "Registrado"
-          if (visibleDnis.length === 0) {
-            Swal.fire({
-                title: "Oops!",
-                text: "No hay expedientes para migrar.",
-                icon: "info"
-            });
-            
-            return;  // Salir de la función si no hay registros para procesar
-        }
-        
-        document.getElementById("loader-small").style = "display : inline-block;"
-        document.getElementById("addFile").disabled = true
-        document.getElementById("migrateExpedientes").disabled = true
-        // Contar documentos en la colección 'folders'
-        const snapshot = await foldersCollection.get();
-        const count = snapshot.size;
-        const folderId = `Desk-${userData.ruc}-${count + 1}`;
-        // Crear un batch para realizar las actualizaciones
-        const batch = db.batch();
-        // Agregar las actualizaciones al batch
-        for (const dni of visibleDnis) {
-            const querySnapshot = await filesCollection.where('dni', '==', dni).get();
-            querySnapshot.forEach(doc => {
-                batch.update(doc.ref, {
-                    status: 'migrated',
-                    folder: folderId
+            try {
+                // Obtener los DNIs visibles en la tabla cuyo estado es "Registrado"
+                const visibleDnis = [];
+                dataTable.rows({ search: 'applied' }).data().each(function (value) {
+                    if ($(value[6]).text() === "Registrado") {  // Asumiendo que el estado está en la sexta columna
+                        visibleDnis.push(value[3]);  // Asumiendo que el DNI está en la cuarta columna
+                    }
                 });
-            });
+
+                // Comprobar si hay DNIs con estado "Registrado"
+                if (visibleDnis.length === 0) {
+                    Swal.fire({
+                        title: "Oops!",
+                        text: "No hay expedientes para migrar.",
+                        icon: "info"
+                    });
+                    return;  // Salir de la función si no hay registros para procesar
+                }
+
+                // Mostrar loader y deshabilitar botones
+                document.getElementById("loader-small").style = "display : inline-block;";
+                document.getElementById("addFile").disabled = true;
+                document.getElementById("migrateExpedientes").disabled = true;
+
+                // Contar documentos en la colección 'folders'
+                const snapshot = await foldersCollection.get();
+                const count = snapshot.size;
+                const folderId = `Desk-${userData.ruc}-${count + 1}`;
+
+                // Crear un batch para realizar las actualizaciones
+                const batch = db.batch();
+
+                // Agregar las actualizaciones al batch usando Promise.all
+                const updatePromises = visibleDnis.map(async (dni) => {
+                    const querySnapshot = await filesCollection.where('dni', '==', dni).get();
+                    querySnapshot.forEach(doc => {
+                        batch.update(doc.ref, {
+                            status: 'migrated',
+                            folder: folderId
+                        });
+                    });
+                });
+
+                // Esperar que todas las actualizaciones terminen
+                await Promise.all(updatePromises);
+
+                // Ejecutar el batch de actualizaciones
+                await batch.commit();
+
+                // Crear un nuevo documento en 'folders' después de migrar expedientes
+                const newFolderDoc = await foldersCollection.add({
+                    codeFolder: folderId,
+                    association: user.ruc,
+                    quantityFiles: visibleDnis.length,
+                    dateRegister: Date.now(),
+                    status: "migrated",
+                    nameAssociation: userData.association
+                });
+
+                // Actualizar el documento recién creado con su propio ID
+                await foldersCollection.doc(newFolderDoc.id).update({
+                    id: newFolderDoc.id
+                });
+
+                // Crear notificación sobre la nueva carpeta
+                await firebase.firestore().collection("notifications").add({
+                    idFolder: newFolderDoc.id,
+                    nameAssociation: user.association,
+                    idUser: "",
+                    title: "¡Una nueva carpeta ha sido recibida!",
+                    type: "folder",
+                    content: `Se ha enviado ${visibleDnis.length} expedientes`,
+                    isOpen: false,
+                    timestamp: Date.now()
+                });
+
+                // Restaurar loader y botones
+                document.getElementById("loader-small").style = "display : none;";
+                document.getElementById("addFile").disabled = false;
+                document.getElementById("migrateExpedientes").disabled = false;
+
+                // Notificación de éxito
+                Swal.fire({
+                    title: "¡Muy bien!",
+                    text: "Migración completada.",
+                    icon: "success"
+                });
+
+            } catch (error) {
+                // Manejo de errores
+                console.error('Error al migrar expedientes:', error);
+
+                document.getElementById("loader-small").style = "display : none;";
+                document.getElementById("addFile").disabled = false;
+                document.getElementById("migrateExpedientes").disabled = false;
+
+                Swal.fire({
+                    title: "Oops!",
+                    text: "Ocurrió un error.",
+                    icon: "error"
+                });
+            }
         }
-
-        // Ejecutar el batch de actualizaciones
-        await batch.commit();
-
-       // Crear un nuevo documento en 'folders' después de migrar expedientes
-       const newFolderDoc = await foldersCollection.add({
-        codeFolder: folderId,
-        association: userData.ruc,
-        quantityFiles: visibleDnis.length,
-        dateRegister : Date.now(),
-        status : "migrated",
-        nameAssociation : userData.association
     });
-
-    await firebase.firestore().collection("folders").doc(newFolderDoc.id).update({
-        id: newFolderDoc.id
-    });
-
-    await firebase.firestore().collection("notifications").add({
-        idFolder: newFolderDoc.id,
-        nameAssociation:userData.association,
-        idUser : "",
-        title : "Una nueva carpeta ha sido recibida!",
-        type : "folder",
-        content : `Se ha enviado ${visibleDnis.length} expedientes`,
-        isOpen : false,
-        timestamp : Date.now()
-    });
-    
-        document.getElementById("loader-small").style = "display : none;"
-        document.getElementById("addFile").disabled = false
-        document.getElementById("migrateExpedientes").disabled = false
-
-        Swal.fire({
-            title: "Muy bien!",
-            text: "Migración completada.",
-            icon: "success"
-        });
-
-    } catch (error) {
-        console.error('Error al migrar expedientes:', error);
-        document.getElementById("loader-small").style = "display : none;"
-        document.getElementById("addFile").disabled = false
-        document.getElementById("migrateExpedientes").disabled = false
-
-        Swal.fire({
-            title: "Oops!",
-            text: "Ocurrió un error.",
-            icon: "error"
-        });
-    }
 });
+
 
 
 function showDetails(button) {
@@ -262,6 +314,15 @@ function showDetails(button) {
     const fileData = JSON.parse(button.getAttribute('data-user'));
     // Aquí puedes manejar la visualización de los detalles del usuario
     console.log(fileData);
+}
+
+function deleteFile(id){
+    firebase.firestore().collection("files").doc(id).delete()
+    Swal.fire({
+        title: "Muy bien!",
+        text: "Expediente eliminado!",
+        icon: "success"
+    });
 }
 
 function enable(){

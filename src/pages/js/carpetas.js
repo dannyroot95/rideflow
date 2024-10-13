@@ -394,7 +394,7 @@ function sendOberved(idFile, idFolder, idInCharge, desk, code,nameAssociation) {
 
             firebase.firestore().collection("notifications").add({
                 idFolder: idFolder,
-                name:user.name,
+                name:user.name+' '+user.lastName,
                 idUser : idInCharge,
                 title : `El expediente #${code} ha sido corregido`,
                 type : "file",

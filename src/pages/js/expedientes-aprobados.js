@@ -176,6 +176,28 @@ async function generate(file) {
             numCardOperation: numCardOperation
         });
 
+        await firebase.firestore().collection("notifications").add({
+                idFolder: fileData.idFolder,
+                name:user.name,
+                idUser : fileData.idInCharge,
+                title : `Se ha generado una tarjeta de operación para la asociación`,
+                type : "card",
+                content : `Se ha generado una tarjeta de operación al usuario con DNI : ${fileData.dni}`,
+                isOpen : false,
+                timestamp : Date.now()
+        });
+
+        await firebase.firestore().collection("notifications").add({
+            idFolder: fileData.idFolder,
+            name:user.name,
+            idUser : fileData.idUserAssociation,
+            title : `Se ha generado una tarjeta de operación para la asociación`,
+            type : "card",
+            content : `Se ha generado una tarjeta de operación al usuario con DNI : ${fileData.dni}`,
+            isOpen : false,
+            timestamp : Date.now()
+    });
+
         Swal.fire({
             title: "Muy bien!",
             text: "Tarjeta de operación generada con éxito.",

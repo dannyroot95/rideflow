@@ -38,7 +38,10 @@ function handleHashChange() {
             break;    
         case '#expedientes':
             gotoPage("expedientes","Expedientes","expedientes");
-            break;  
+            break;
+        case '#expedientes-op':
+            gotoPage("expedientes-op","Mis expedientes","expedientes-op");
+            break;        
         case '#expedientes-aprobados':
                 gotoPage("expedientes-aprobados","Expedientes aprobados","expedientes-aprobados");
                 break;         

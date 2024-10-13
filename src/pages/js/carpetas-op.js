@@ -184,18 +184,41 @@ function showDetails(button,idFolder) {
            <input type="file" class="form-control" id="certificatedFile">`
 
         document.getElementById("div-content-resolution").innerHTML = `
-           <span class="input-group-text" style="font-weight: 600;color: #a80084;" id="resolution-addon-file">
-           N° de Resolución de SubGerencia</span>
-           <input type="text" style="text-transform:uppercase;" placeholder="001-2024-MPT-GSC-SGSVYT" class="form-control" id="resolutionNum">  
-           <input type="file" class="form-control" id="resolutionFile">`   
+                    
+                    <div class="input-group">
+            <!-- Texto: N° de Resolución de SubGerencia -->
+            <label for="resolutionNum" class="input-group-text" style="font-weight: 600; color: #a80084;">
+                N° de Resolución de SubGerencia
+            </label>
+            <!-- Input: Número de resolución -->
+            <input maxlength="4" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;'  placeholder="001" class="form-control" id="resolutionNum">  
+            </div>
+
+            <div class="input-group mt-2">
+            <!-- Texto: Año -->
+            <label for="yearResolutionNum" class="input-group-text" style="font-weight: 600; color: #a80084;">
+                Año
+            </label>
+            <!-- Input: Año de resolución -->
+            <input maxlength="4" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;'  placeholder="2024" class="form-control" id="yearResolutionNum">  
+            </div>
+
+            <div class="input-group mt-2">
+            <!-- Input: Archivo de resolución -->
+            <input type="file" class="form-control" id="resolutionFile">
+            </div>
+
+        
+        `   
     }else if(fileData.status == 'aproved'){
         optionsNormal()
         document.getElementById("inputGroupSelectOperation").disabled = true
         //addOn-observed btnCorect
         document.getElementById("addOn-observed").style = "display:none;"
-        document.getElementById("btnCorrect").style = "display:flex;width:100%"
+        document.getElementById("btnCorrect").innerHTML = ``
         document.getElementById("txtObserved").disabled = false
         document.getElementById("div-content-certificated").innerHTML = ``
+        document.getElementById("div-content-resolution").innerHTML = ""
     }
 
 }
@@ -336,13 +359,14 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
         const certificatedFile = document.getElementById("certificatedFile").files[0];
         const resolutionFile = document.getElementById("resolutionFile").files[0];
         const numResolution = document.getElementById("resolutionNum").value
+        const yearResolution = document.getElementById("yearResolutionNum").value
     
         if (certificatedFile && resolutionFile) {
 
-            if(numResolution == ""){
+            if(numResolution == "" && yearResolution == ""){
                 Swal.fire({
                     title: "Oops",
-                    text: "Ingrese el número de la resolución!",
+                    text: "Ingrese el número y año de la resolución!",
                     icon: "warning"
                 });
                 return;
@@ -363,7 +387,7 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
                             fileUrlCertificated: fileURL,
                             fileUrlResolution: fileURL2,
                             status : "aproved",
-                            numResolution : numResolution
+                            numResolution : String(numResolution).padStart(4, '0')+'-'+yearResolution+'-MTP-GSC-SGSVYT'
                         });
     
                         return Promise.all([updates, fileURL, fileURL2]);
@@ -392,7 +416,7 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
                 .then(() => {
                     Swal.fire({
                         title: "Muy bien",
-                        text: "Expediente aceptado!",
+                        text: "Expediente aprobado!",
                         icon: "success"
                     });
                     enable();

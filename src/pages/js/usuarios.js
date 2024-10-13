@@ -58,6 +58,9 @@ usersCollection.where("typeUser", "!=", "association").onSnapshot((snapshot) => 
             case "window":
                 typeUserText = "Ventanilla";
                 break;
+            case "operator":
+                typeUserText = "Operador";
+                break;
             default:
                 typeUserText = "Ciudadano";
         }

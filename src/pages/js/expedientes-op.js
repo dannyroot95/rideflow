@@ -46,16 +46,16 @@ usersCollection.where("idInCharge", "==", user.id).onSnapshot((snapshot) => {
         const fileData = doc.data();
 
         let cardHTML = `
-            <div class="card" style="width: 20rem; margin-bottom: 20px;background-color:#f1f1f1;">
+            <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">${fileData.name}</h5>
                     <p class="card-text">Código de expediente : ${fileData.code}</p>
-                     <p class="card-text">Código de carpeta : ${fileData.folder}</p>
+                    <p class="card-text">Código de carpeta : ${fileData.folder}</p>
                     <p class="card-text">DNI : ${fileData.dni}</p>
                     <p class="card-text">Teléfono : ${fileData.phone}</p>
                     <p class="card-text">Fecha de registro : ${formatoFechaDesdeTimestamp(fileData.dateRegister)} ${obtenerHoraMinutoDesdeTimestamp(fileData.dateRegister)}</p>
                     <p class="card-text">Estado : ${getStatus(fileData.status)}</p>
-                    <center><a href="#" class="btn btn-primary" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this)")">Ver Detalles</a></center>
+                    <center><a href="#" class="btn btn-primary" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this)">Ver Detalles</a></center>
                 </div>
             </div>
         `;
@@ -63,7 +63,6 @@ usersCollection.where("idInCharge", "==", user.id).onSnapshot((snapshot) => {
         cardContainer.insertAdjacentHTML('beforeend', cardHTML);
     });
 
-    // Si necesitas mostrar algún loader o hacer ajustes de visibilidad, maneja eso aquí.
     document.getElementById("loader").style.display = "none";
 }, (error) => {
     console.error("Error al obtener documentos: ", error);
@@ -201,7 +200,7 @@ function getStatusFromDetails(status){
         document.getElementById("d-status").style = "color:#fff;background-color: #009083;"
         status = `<b>Corregido</b>`
     }else if(status == "acepted"){
-        document.getElementById("d-status").style = "color:#fff;background-color: #9bfc00;"
+        document.getElementById("d-status").style = "color:#fff;background-color: #900C3F;"
         status = `<b>Aceptado</b>`
     }else if(status == "aproved"){
         document.getElementById("d-status").style = "color:#fff;background-color: #00356d;"
@@ -262,7 +261,7 @@ function getStatus(status){
     }else if(status == "corrected"){
         status = `<b style="color:#009083;">Corregido</b>`
     }else if(status == "acepted"){
-        status = `<b style="color:#9bfc00;">Aceptado</b>`
+        status = `<b style="color:#900C3F;">Aceptado</b>`
     }else if(status == "aproved"){
         status = `<b style="color:#00356d;">Aprobado</b>`
     }

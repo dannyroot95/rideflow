@@ -50,7 +50,8 @@ document.getElementById("inputGroupSelectOperation").addEventListener("change", 
 const dataTable = $('#tb-data').DataTable();
 const foldersCollection = db.collection('folders');
 
-foldersCollection.onSnapshot(async (snapshot) => {
+foldersCollection
+.where("idInCharge", "in", ["", user.id]).onSnapshot(async (snapshot) => {
     dataTable.clear();
 
     for (const doc of snapshot.docs) {
@@ -73,7 +74,15 @@ foldersCollection.onSnapshot(async (snapshot) => {
             .where("folder", "==", folderData.codeFolder)
             .get();
 
+        let quantity1 = 0 
+        let quantity2 = 0 
+        let quantity3 = 0 
+        let quantity4 = 0 
+        let quantity5 = 0 
+        let quantity6 = 0    
+
         filesSnapshot.forEach(fileDoc => {
+
             const fileData = fileDoc.data();
             const details = `<center><button class="btn btn-light" style="background-color:#00b465;color:white;" data-user='${JSON.stringify(fileData)}' onclick="showDetails(this,'${folderData.id}')">Ver</button></center>`;
 
@@ -86,6 +95,31 @@ foldersCollection.onSnapshot(async (snapshot) => {
             <td>${fileData.phone}</td>
             <td>${getStatus(fileData.status)}</td>
             </tr>`;
+
+            if(fileData.status == "migrated"){
+                quantity2++
+            }
+
+            if(fileData.status == "observed"){
+                quantity3++
+            }
+
+            if(fileData.status == "corrected"){
+                quantity4++
+            }
+
+            if(fileData.status == "acepted"){
+                quantity5++
+            }
+
+            if(fileData.status == "aproved"){
+                quantity6++
+            }
+
+            if(fileData.status == "denied"){
+                quantity1++
+            }
+
         });
 
         tableContent += '</tbody></table>';
@@ -94,10 +128,17 @@ foldersCollection.onSnapshot(async (snapshot) => {
         <div class="accordion accordion-flush">  
             <div class="accordion-item">
                 <h2 class="accordion-header" id="heading${doc.id}">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${doc.id}" aria-expanded="false" aria-controls="collapse${doc.id}">
-                      Asociación : ${folderData.nameAssociation} &nbsp;&nbsp; | &nbsp;&nbsp; Código de carpeta: ${folderData.codeFolder} &nbsp;&nbsp; | &nbsp;&nbsp; Cantidad de expedientes : ${folderData.quantityFiles} &nbsp;&nbsp; | &nbsp;&nbsp; Fecha de operación : ${formatoFechaDesdeTimestamp(folderData.dateRegister)} ${obtenerHoraMinutoDesdeTimestamp(folderData.dateRegister)}
-                    </button>
+                    <button class="accordion-button collapsed acc" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${doc.id}" aria-expanded="false" aria-controls="collapse${doc.id}">
+                      Asociación : ${folderData.nameAssociation} &nbsp;&nbsp; | 
+                      &nbsp;&nbsp; Código de carpeta: ${folderData.codeFolder} &nbsp;&nbsp; | 
+                      &nbsp;&nbsp; Cantidad de expedientes : ${folderData.quantityFiles} &nbsp;&nbsp; | 
+                      &nbsp;&nbsp; Fecha de operación : ${formatoFechaDesdeTimestamp(folderData.dateRegister)} ${obtenerHoraMinutoDesdeTimestamp(folderData.dateRegister)}
+                      </button>
                 </h2>
+                <label style="margin-left:15px;display: flex;justify-content: left;">
+                <span style="color:red;">● Rechazados</span> &nbsp;: ${quantity1} &nbsp;&nbsp; <span style="color:#b49600">● Migrados</span>&nbsp; : ${quantity2} &nbsp;&nbsp; <span style="color:red;">● Observados</span>&nbsp; : ${quantity3} &nbsp;&nbsp; <span style="color:#009083;">● Corregidos</span> &nbsp;: ${quantity4} &nbsp;&nbsp; <span style="color:#900C3F;">● Aceptados</span> &nbsp;: ${quantity5} &nbsp;&nbsp; <span style="color:#00356d;">● Aprobados</span>&nbsp; : ${quantity6}
+                </label>
+                <label style="visibility: hidden;">X</label>
                 <div id="collapse${doc.id}" class="accordion-collapse collapse" aria-labelledby="heading${doc.id}" data-bs-parent="#accordionFlushExample">
                     <div class="accordion-body">${tableContent}</div>
                 </div>
@@ -105,9 +146,14 @@ foldersCollection.onSnapshot(async (snapshot) => {
         </div>    
         `;
 
+        quantity1 = 0
+        quantity6 = 0
+
         dataTable.row.add([
             content
         ]);
+
+
     };
 
     dataTable.draw(false);
@@ -234,7 +280,7 @@ function getStatus(status){
     }else if(status == "corrected"){
         status = `<b style="color:#009083;">Corregido</b>`
     }else if(status == "acepted"){
-        status = `<b style="color:#9bfc00;">Aceptado</b>`
+        status = `<b style="color:#900C3F;">Aceptado</b>`
     }else if(status == "aproved"){
         status = `<b style="color:#00356d;">Aprobado</b>`
     }
@@ -255,7 +301,7 @@ function getStatusFromDetails(status){
         document.getElementById("status").style = "color:#fff;background-color: #009083;"
         status = `<b>Corregido</b>`
     }else if(status == "acepted"){
-        document.getElementById("status").style = "color:#fff;background-color: #9bfc00;"
+        document.getElementById("status").style = "color:#fff;background-color: #900C3F;"
         status = `<b>Aceptado</b>`
     }else if(status == "aproved"){
         document.getElementById("status").style = "color:#fff;background-color: #00356d;"
@@ -298,6 +344,8 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
             firebase.firestore().collection("folders").doc(idFolder).update({
                 timesUpdated: parseInt(timesUpdatedFolder)+1,
                 status : status,
+                idInCharge : user.id,
+                nameInCharge : user.name+' '+user.lastName,
                 dateRegister : Date.now()
             });
 
@@ -309,6 +357,14 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
                 type : "file",
                 content : `El expediente con DNI : ${dniFile} ha sido observado en la carpeta : ${desk}`,
                 isOpen : false,
+                timestamp : Date.now()
+            });
+
+            firebase.firestore().collection("logs").add({
+                idUser: user.id,
+                nameUser:user.name +' '+user.lastName,
+                type : "update",
+                content : `El usuario ha actualizado un estado a : observado`,
                 timestamp : Date.now()
             });
         
@@ -336,16 +392,25 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
         });
         firebase.firestore().collection("folders").doc(idFolder).update({
             status : status,
-            dateRegister : Date.now()
+            nameInCharge : user.name+' '+user.lastName,
+            dateRegister : Date.now(),
+            idInCharge : user.id
         });
         firebase.firestore().collection("notifications").add({
             idFolder: idFolder,
             name:user.name +' '+user.lastName,
             idUser : idAssociation,
-            title : `El expediente #${desk} ha sido aceptado exitosamente`,
+            title : `El expediente #${code} ha sido aceptado exitosamente`,
             type : "file",
             content : `El expediente con DNI : ${dniFile} ha sido aceptado , ahora debe pasar por la capacitación , una vez capacitado se subirá su constancia y se le notificará.`,
             isOpen : false,
+            timestamp : Date.now()
+        });
+        firebase.firestore().collection("logs").add({
+            idUser: user.id,
+            nameUser:user.name +' '+user.lastName,
+            type : "update",
+            content : `El usuario ha actualizado un estado a : aceptado`,
             timestamp : Date.now()
         });
         Swal.fire({
@@ -396,6 +461,8 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
                 .then(() => {
                     return firebase.firestore().collection("folders").doc(idFolder).update({
                         status: "aproved",
+                        nameInCharge : user.name+' '+user.lastName,
+                        idInCharge : user.id,
                         dateRegister: Date.now()
                     }).then(() => ({
                         //
@@ -411,6 +478,15 @@ function send(idFile,idFolder,idAssociation,timesObserved,timesUpdatedFolder,dni
                         content: `El expediente con DNI: ${dniFile} ha sido aprobado, apersonece a ventanilla a recojer su tarjeta de operación.`,
                         isOpen: false,
                         timestamp: Date.now()
+                    });
+                })
+                .then(() => {
+                    return firebase.firestore().collection("logs").add({
+                        idUser: user.id,
+                        nameUser:user.name +' '+user.lastName,
+                        type : "update",
+                        content : `El usuario ha actualizado un estado a : aprobado`,
+                        timestamp : Date.now()
                     });
                 })
                 .then(() => {

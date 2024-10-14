@@ -168,6 +168,14 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
             id: docRef.id
         });
 
+        await firebase.firestore().collection("logs").add({
+            idUser: user.id,
+            nameUser:user.name,
+            type : "create",
+            content : `El usuario ha creado un expediente`,
+            timestamp : Date.now()
+        });
+
         Swal.fire({
             title: "Muy bien",
             text: "Expediente creado!",
@@ -257,7 +265,9 @@ document.getElementById('migrateExpedientes').addEventListener('click', async ()
                     quantityFiles: visibleDnis.length,
                     dateRegister: Date.now(),
                     status: "migrated",
-                    nameAssociation: userData.association
+                    nameAssociation: userData.association,
+                    idInCharge : "",
+                    nameInCharge : ""
                 });
 
                 // Actualizar el documento recién creado con su propio ID
@@ -268,13 +278,21 @@ document.getElementById('migrateExpedientes').addEventListener('click', async ()
                 // Crear notificación sobre la nueva carpeta
                 await firebase.firestore().collection("notifications").add({
                     idFolder: newFolderDoc.id,
-                    nameAssociation: user.association,
+                    name: user.association,
                     idUser: "",
                     title: "¡Una nueva carpeta ha sido recibida!",
                     type: "folder",
                     content: `Se ha enviado ${visibleDnis.length} expedientes`,
                     isOpen: false,
                     timestamp: Date.now()
+                });
+
+                await firebase.firestore().collection("logs").add({
+                    idUser: user.id,
+                    nameUser:user.name,
+                    type : "create",
+                    content : `El usuario ha creado una carpeta`,
+                    timestamp : Date.now()
                 });
 
                 // Restaurar loader y botones
@@ -330,7 +348,7 @@ function showDetails(button) {
 
     document.getElementById("d-status").innerHTML = getStatusFromDetails(fileData.status)
 
-    if(fileData.status == "migrated" || fileData.status == "corrected"){
+    if(fileData.status == "registered" || fileData.status == "migrated" || fileData.status == "corrected" || fileData.status == "acepted"){
         //addOn-observed btnCorect
         document.getElementById("d-dni").disabled = true
         document.getElementById("d-dni-addon-file").style.display = "none"
@@ -354,6 +372,8 @@ function showDetails(button) {
         document.getElementById("d-btnCorrect").style = "display:none;"
         document.getElementById("d-btnCorrect").innerHTML = ``
         document.getElementById("d-div-content-certificated").innerHTML = ``
+        document.getElementById("d-txtObserved").style = "display:none;"
+        
 
     }else if(fileData.status == "aproved"){
 
@@ -373,9 +393,8 @@ function showDetails(button) {
         document.getElementById("d-color").disabled = true
         document.getElementById("d-codeVest").disabled = true
 
-
-
         document.getElementById("d-addOn-observed").style = "display:none;"
+        document.getElementById("d-txtObserved").style = "display:none;"
         document.getElementById("d-btnCorrect").style = "display:none;"
         document.getElementById("d-btnCorrect").innerHTML = ``
         document.getElementById("d-div-content-certificated").innerHTML = `<span class="input-group-text">Certificado de capacitación</span>
@@ -442,7 +461,7 @@ function getStatusFromDetails(status){
         document.getElementById("d-status").style = "color:#fff;background-color: #009083;"
         status = `<b>Corregido</b>`
     }else if(status == "acepted"){
-        document.getElementById("d-status").style = "color:#fff;background-color: #9bfc00;"
+        document.getElementById("d-status").style = "color:#fff;background-color: #900C3F;"
         status = `<b>Aceptado</b>`
     }else if(status == "aproved"){
         document.getElementById("d-status").style = "color:#fff;background-color: #00356d;"
@@ -453,6 +472,14 @@ function getStatusFromDetails(status){
 
 function deleteFile(id){
     firebase.firestore().collection("files").doc(id).delete()
+    firebase.firestore().collection("logs").add({
+        idUser: user.id,
+        nameUser:user.name,
+        type : "delete",
+        content : `El usuario ha eliminado un expediente id -> ${id}`,
+        timestamp : Date.now()
+    });
+
     Swal.fire({
         title: "Muy bien!",
         text: "Expediente eliminado!",
@@ -503,7 +530,7 @@ function getStatus(status){
     }else if(status == "corrected"){
         status = `<b style="color:#009083;">Corregido</b>`
     }else if(status == "acepted"){
-        status = `<b style="color:#9bfc00;">Aceptado</b>`
+        status = `<b style="color:#900C3F;">Aceptado</b>`
     }else if(status == "aproved"){
         status = `<b style="color:#00356d;">Aprobado</b>`
     }
@@ -627,6 +654,14 @@ function sendOberved(idFile, idFolder, idInCharge, desk, code,nameAssociation) {
                                 timestamp : Date.now()
                             });
 
+                            firebase.firestore().collection("logs").add({
+                                idUser: user.id,
+                                nameUser:user.name,
+                                type : "update",
+                                content : `El usuario ha actualizado un estado a : corregido`,
+                                timestamp : Date.now()
+                            });
+
                             Swal.fire({
                                 title: "Muy bien",
                                 text: "Expediente corregido!",
@@ -682,6 +717,15 @@ function sendOberved(idFile, idFolder, idInCharge, desk, code,nameAssociation) {
                 isOpen : false,
                 timestamp : Date.now()
             });
+
+            firebase.firestore().collection("logs").add({
+                idUser: user.id,
+                nameUser:user.name,
+                type : "update",
+                content : `El usuario ha actualizado un estado a : corregido`,
+                timestamp : Date.now()
+            });
+
 
             Swal.fire({
                 title: "Muy bien",

@@ -30,6 +30,9 @@ function handleHashChange() {
         case '#inicio-asoc':
             gotoPage("inicio-asoc","Inicio","inicio-asoc");
             break;
+        case '#configuracion':
+            gotoPage("configuracion","Configuración","configuracion");
+            break;    
         case '#usuarios':
             gotoPage("usuarios","Usuarios","usuarios");
             break;
@@ -49,7 +52,7 @@ function handleHashChange() {
             gotoPage("carpetas","Carpetas","carpetas");
             break;   
         case '#carpetas-op':
-            gotoPage("carpetas-op","Carpetas","carpetas-op");
+            gotoPage("carpetas-op","Mis carpetas","carpetas-op");
             break;    
         case '#tarjetas-de-operacion-v':
             gotoPage("tarjetas-de-operacion-v","Tarjetas de operación","tarjetas-de-operacion-v");

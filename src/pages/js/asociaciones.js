@@ -1,4 +1,5 @@
 // Inicializa DataTable
+
 function createDatatable() {
     $('#tb-data').DataTable({
         language: {
@@ -133,6 +134,18 @@ document.getElementById("createUserForm").addEventListener("submit", async (e) =
                 status: status,
                 typeUser: typeUser
             });
+
+            let dataUser = localStorage.getItem("userData");
+            let user = dataUser ? JSON.parse(dataUser) : null;
+
+            await db.collection("logs").add({
+                        idUser: user.id,
+                        nameUser:user.name +' '+user.lastName,
+                        type : "create",
+                        content : `El usuario ha creado una asociación : ${association}`,
+                        timestamp : Date.now()
+            });
+
 
             Swal.fire({
                 title: "Muy bien",

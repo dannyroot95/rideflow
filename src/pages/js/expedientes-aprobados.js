@@ -198,6 +198,14 @@ async function generate(file) {
             timestamp : Date.now()
     });
 
+        await db.collection("logs").add({
+            idUser: user.id,
+            nameUser:user.name +' '+user.lastName,
+            type : "create",
+            content : `El usuario ha creado una tarjeta de operación`,
+            timestamp : Date.now()
+    });
+
         Swal.fire({
             title: "Muy bien!",
             text: "Tarjeta de operación generada con éxito.",
@@ -271,7 +279,7 @@ function getStatus(status){
     }else if(status == "corrected"){
         status = `<b style="color:#009083;">Corregido</b>`
     }else if(status == "acepted"){
-        status = `<b style="color:#9bfc00;">Aceptado</b>`
+        status = `<b style="color:#900C3F;">Aceptado</b>`
     }else if(status == "aproved"){
         status = `<b style="color:#00356d;">Aprobado</b>`
     }

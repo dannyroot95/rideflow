@@ -17,6 +17,35 @@
 
 <style>
 
+div:where(.swal2-container).swal2-backdrop-show, div:where(.swal2-container).swal2-noanimation {
+    background: rgb(255 255 255 / 40%);
+}
+
+    div:where(.swal2-container) div:where(.swal2-popup) {
+        display: none;
+        position: relative;
+        box-sizing: border-box;
+        grid-template-columns: minmax(0, 100%);
+        width: 32em;
+        max-width: 100%;
+        padding: 0 0 1.25em;
+        border: none;
+        border-radius: 5px;
+        background: #093e00;
+        color: #ffffff;
+        font-family: inherit;
+        font-size: 1rem;
+    }
+
+    div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-confirm) {
+        border: 0;
+        border-radius: .25em;
+        background: initial;
+        background-color: #ffffff;
+        color: #000000;
+        font-size: 1em;
+    }
+
 body {
     justify-content: center;
     align-items: center;
@@ -48,14 +77,20 @@ body {
     <input disabled id="name" type="text" class="form-control">
 </div>
 
-<div class="container">
+<div class="container"><center>
+    <label>Nueva firma</label>
     <canvas id="signature-pad" width="400" height="200"></canvas>
+    <center><label>Firma Actual</label></center>
+    <canvas id="signature-pad2" width="400" height="200"></canvas>
+</center>
 </div>
 
 <div class="container">
     <center><button style="width: 300px;" class="btn btn-danger" id="clear">Limpiar Firma</button></center>
     <p></p>
     <center><button style="width: 300px;" class="btn btn-success" id="save">Guardar</button></center>
+    
+    <center style="margin-top: 20px;"><div class="loader2" id="loader2" style="display: none;"></div></center>
 
 </div>
 

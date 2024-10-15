@@ -245,7 +245,7 @@ function createDatatable() {
 createDatatable();
 
 
-if(user.typeUser != "window"){
+if(user.typeUser == "operator" || user.typeUser == "association"){
   Swal.fire({
     title: '¿Quieres recibir notificaciones?',
     text: "Puedes activar o desactivar las notificaciones en cualquier momento.",

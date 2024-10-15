@@ -1,5 +1,9 @@
 var dataUser = localStorage.getItem("userData");
 var user = dataUser ? JSON.parse(dataUser) : null;
+var boss = ""
+var signatureUrl = ""
+
+getSignature()
 
 // Inicializa DataTable
 function createDatatable() {
@@ -125,6 +129,15 @@ async function generate(file) {
     const fileData = JSON.parse(file.getAttribute('data-user'));
     const CardsOperationCollection = db.collection('cards');
 
+    if(boss == "" && signatureUrl == ""){
+        Swal.fire({
+            title: "Oops!",
+            text: "No hay firma electrónica disponible.",
+            icon: "warning"
+        });
+        return
+    }
+
     try {
         disable()
         // Obtén el tamaño de la colección
@@ -164,7 +177,9 @@ async function generate(file) {
             category:fileData.category,
             idGeneratedBy : user.id,
             nameGeneratedBy : user.name+' '+user.lastName,
-            nameAssociation : fileData.nameAssociation
+            nameAssociation : fileData.nameAssociation,
+            nameInCharge : boss,
+            signatureUrl : signatureUrl
         });
         
         // Actualiza el documento recién creado con su propio ID
@@ -303,4 +318,11 @@ function obtenerHoraMinutoDesdeTimestamp(timestamp) {
     const minutos = String(fecha.getMinutes()).padStart(2, '0'); // Obtiene los minutos y los formatea
 
     return `${horas}:${minutos}`; // Devuelve la hora en formato HH:mm
+}
+
+function getSignature(){
+    db.collection("config").doc("data").get().then((snapshot)  => {
+        boss = snapshot.data().fullnameIngCharge
+        signatureUrl = snapshot.data().signatureUrl
+})
 }

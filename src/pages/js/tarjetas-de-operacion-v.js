@@ -77,13 +77,14 @@ usersCollection.onSnapshot((snapshot) => {
 // Muestra el modal con los detalles del archivo seleccionado
 function showDetails(button) {
     const fileData = JSON.parse(button.getAttribute('data-user'));
-
+    document.getElementById('pdfFrame').src = ""
     $('#details').modal('show');
     updateDetailsModal(fileData);
 }
 
 // Actualiza los campos del modal con los datos del archivo
 function updateDetailsModal(fileData) {
+    document.getElementById("loader2").style = "display:flex;margin-top:200px;margin-bottom:-200px"
     // Configuración inicial de jsPDF con tamaño personalizado para carnet que se dobla
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
@@ -95,63 +96,76 @@ function updateDetailsModal(fileData) {
     var image = new Image();
     image.src = "/images/t-operacion.png"; // Asegúrate de que la ruta es accesible
     image.onload = function() {
+        var signature = new Image();
+        signature.setAttribute('crossOrigin', 'anonymous');
+        signature.src = fileData.signatureUrl; // Asegúrate de que la ruta es accesible
+        signature.onload = function() {
 
+            var canvas = document.createElement('canvas');
+            QRCode.toCanvas(canvas, fileData.id, function (error) {
+                if (error) console.error('Error al crear QR: ', error);
+                document.getElementById("loader2").style.display = "none"
+                var imgData = canvas.toDataURL('image/png');
+                // Añadir la imagen de fondo
+                const imgWidth = 90; // El ancho de la imagen debe cubrir el ancho del PDF
+                const imgHeight = 132; // Altura de la imagen ajustada para cubrir la mitad superior
+                const x = 0;
+                const y = 0;
 
-        var canvas = document.createElement('canvas');
-        QRCode.toCanvas(canvas, fileData.id, function (error) {
-            if (error) console.error('Error al crear QR: ', error);
-            var imgData = canvas.toDataURL('image/png');
-       // Posicionar la imagen para que esté centrada en la parte superior de la tarjeta
-       const imgWidth = 90; // El ancho de la imagen debe cubrir el ancho del PDF
-       const imgHeight = 132; // Altura de la imagen ajustada para cubrir la mitad superior
-       const x = 0;
-       const y = 0;
+                // Añadir la imagen de fondo cuando esté completamente cargada
+                doc.addImage(image, 'PNG', x, y, imgWidth, imgHeight);
 
-       // Añadir la imagen cuando esté completamente cargada
+                // Texto en el PDF
+                doc.setFontSize(7);
+                doc.setTextColor("#FC0000");
+                doc.text('N° ' + fileData.numCardOperation, 35.5, 25);
+                doc.setFontSize(6);
+                doc.setTextColor("#535353");
 
-       doc.addImage(image, 'PNG', x, y, imgWidth, imgHeight);
-       doc.setFontSize(7);
-       doc.setTextColor("#FC0000");
-       doc.text('N° '+fileData.numCardOperation,35.5,25);
-       doc.setFontSize(6);
-       doc.setTextColor("#535353");
+                doc.text(fileData.nameAssociation, 4, 33);
+                doc.text((fileData.plate).toUpperCase(), 4, 41.3);
+                doc.text(fileData.yearBuild, 4, 48.6);
+                doc.text((fileData.numSerieVehicle).toUpperCase(), 4, 56.5);
+                doc.text((fileData.numEngine).toUpperCase(), 4, 64);
 
-       doc.text(fileData.nameAssociation,4,33);
-       doc.text((fileData.plate).toUpperCase(),4,41.3);
-       doc.text(fileData.yearBuild,4,48.6);
-       doc.text((fileData.numSerieVehicle).toUpperCase(),4,56.5);
-       doc.text((fileData.numEngine).toUpperCase(),4,64);
+                doc.text((fileData.numResolution).toUpperCase(), 52.5, 35);
+                doc.text((fileData.brand + ' - ' + fileData.model).toUpperCase(), 52.5, 42.5);
+                doc.text((fileData.color).toUpperCase(), 52.5, 48.5);
+                doc.text((fileData.category).toUpperCase(), 52.5, 55);
+                doc.text(fileData.dateGenerated, 52, 61);
+                doc.text(fileData.expiryDate, 71.5, 61);
 
-       doc.text((fileData.numResolution).toUpperCase(),52.5,35);
-       doc.text((fileData.brand + ' - ' +fileData.model).toUpperCase(),52.5,42.5);
-       doc.text((fileData.color).toUpperCase(),52.5,48.5);
-       doc.text((fileData.category).toUpperCase(),52.5,55);
-       doc.text(fileData.dateGenerated,52,61);
-       doc.text(fileData.expiryDate,71.5,61);
+                doc.text((fileData.codeVest).toUpperCase(), 29, 88.5);
+                doc.addImage(imgData, 'PNG', 52.5, 82, 12, 12); // Ajusta las coordenadas y tamaño según necesites
 
-       doc.text((fileData.codeVest).toUpperCase(),29,88.5);
-       doc.addImage(imgData, 'PNG', 52.5, 82, 12, 12); // Ajusta las coordenadas y tamaño según necesites
+                doc.setFontSize(5);
+                doc.text(fileData.yearBuild + fileData.dni, 66, 88.5);
+                doc.text(formatDateToDDMMYYYY(Date.now()) + ' ' + obtenerHoraMinutoDesdeTimestamp(Date.now()), 66, 94.5);
 
-       doc.setFontSize(5);
-       doc.text(fileData.yearBuild+fileData.dni,66,88.5);
-       doc.text(formatDateToDDMMYYYY(Date.now())+' '+obtenerHoraMinutoDesdeTimestamp(Date.now()),66,94.5);
+                // Añadir la imagen de la firma cuando esté completamente cargada
+                doc.addImage(signature, 'PNG', 35, 109, 25, 10); // Ajusta las coordenadas y tamaño según necesites
+                doc.setTextColor("#000");
+                doc.text(fileData.nameInCharge,30, 123);
+                // Exportar el PDF a un blob
+                const pdfBlob = doc.output('blob');
+                // Crear un URL para el blob
+                const url = URL.createObjectURL(pdfBlob);
+                // Mostrar el PDF en el iframe del modal
+                document.getElementById('pdfFrame').src = url;
+                // Mostrar el modal
+            });
+        };
 
-       // Exportar el PDF a un blob
-       const pdfBlob = doc.output('blob');
-       // Crear un URL para el blob
-       const url = URL.createObjectURL(pdfBlob);
-       // Mostrar el PDF en el iframe del modal
-       document.getElementById('pdfFrame').src = url;
-       // Mostrar el modal
-       $('#details').modal('show');
-            // Añadir la imagen QR al PDF
-
-        });
+        signature.onerror = function() {
+            console.error("Error loading the signature image.");
+        };
     };
+
     image.onerror = function() {
-        console.error("Error loading the image.");
+        console.error("Error loading the background image.");
     };
 }
+
 
 // Genera la tarjeta de operación
 // Genera la tarjeta de operación y guarda los datos en la colección 'cards'
@@ -235,3 +249,4 @@ function obtenerHoraMinutoDesdeTimestamp(timestamp) {
 
     return `${horas}:${minutos}`; // Devuelve la hora en formato HH:mm
 }
+

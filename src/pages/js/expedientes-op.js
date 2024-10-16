@@ -39,11 +39,14 @@ const dataTable = $('#tb-data').DataTable();
 const usersCollection = db.collection('files');
 
 usersCollection.where("idInCharge", "==", user.id).onSnapshot((snapshot) => {
+
     const cardContainer = document.querySelector('.card-container');
     cardContainer.innerHTML = '';  // Limpia el contenedor antes de añadir nuevas tarjetas
+    let ctx = 0
 
     snapshot.forEach((doc) => {
         const fileData = doc.data();
+        ctx++
 
         let cardHTML = `
             <div class="card">
@@ -64,6 +67,15 @@ usersCollection.where("idInCharge", "==", user.id).onSnapshot((snapshot) => {
     });
 
     document.getElementById("loader").style.display = "none";
+
+    if(ctx == 0){
+        Swal.fire({
+            title: "Oops!",
+            text: "No tienes expedientes a cargo!",
+            icon: "warning"
+        });
+    }
+
 }, (error) => {
     console.error("Error al obtener documentos: ", error);
 });
@@ -230,10 +242,6 @@ function disable(){
     document.getElementById("loader2").style.display = "block"
 }
 
-var modalAddUser = document.getElementById('fileModal');
-modalAddUser.addEventListener('hidden.bs.modal', function (event) {
-    document.getElementById("createFileForm").reset();
-});
 
 function isLetter(event) {
     const charCode = event.which || event.keyCode;

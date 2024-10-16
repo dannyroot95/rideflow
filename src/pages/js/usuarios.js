@@ -1,4 +1,7 @@
 // Inicializa DataTable
+var dataUser = localStorage.getItem("userData");
+var user = dataUser ? JSON.parse(dataUser) : null;
+
 function createDatatable() {
     $('#tb-data').DataTable({
         language: {
@@ -37,7 +40,7 @@ createDatatable();
 const dataTable = $('#tb-data').DataTable();
 const usersCollection = db.collection('users');
 
-usersCollection.where("typeUser", "!=", "association").onSnapshot((snapshot) => {
+usersCollection.where("typeUser", "not-in", ["association", "superAdmin"]).onSnapshot((snapshot) => {
     // Limpia el DataTable antes de añadir nuevos datos
     dataTable.clear();
     
@@ -49,9 +52,6 @@ usersCollection.where("typeUser", "!=", "association").onSnapshot((snapshot) => 
         // Asignación de typeUserText usando switch
         let typeUserText;
         switch (userData.typeUser) {
-            case "superAdmin":
-                typeUserText = "Super Administrador";
-                break;
             case "admin":
                 typeUserText = "Administrador";
                 break;
@@ -139,6 +139,14 @@ document.getElementById("createUserForm").addEventListener("submit", async (e) =
                 status: status,
                 typeUser: typeUser
             });
+
+            await firebase.firestore().collection("logs").add({
+                idUser: user.id,
+                nameUser:user.name,
+                type : "create",
+                content : `El usuario ha creado un usuario : ${typeUser}`,
+                timestamp : Date.now()
+            });
     
             Swal.fire({
                 title: "Muy bien",
@@ -175,6 +183,14 @@ function toggleUserStatus(idUser, newStatus, idLabel) {
     labelElement.innerHTML = newStatus === 'on' ? 'Activo' : 'Inactivo';
     labelElement.style.color = newStatus === 'on' ? '#136800' : '#fc0000';
     usersCollection.doc(idUser).update({ status: newStatus })
+
+    firebase.firestore().collection("logs").add({
+        idUser: user.id,
+        nameUser:user.name+' '+user.lastName,
+        type : "update",
+        content : `El usuario ha modificado un estado de usuario (${idUser}) : ${newStatus}`,
+        timestamp : Date.now()
+    });
 
 }
 

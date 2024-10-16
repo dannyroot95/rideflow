@@ -1,4 +1,6 @@
 // Inicializa DataTable
+let dataUser = localStorage.getItem("userData");
+let user = dataUser ? JSON.parse(dataUser) : null;
 
 function createDatatable() {
     $('#tb-data').DataTable({
@@ -135,9 +137,6 @@ document.getElementById("createUserForm").addEventListener("submit", async (e) =
                 typeUser: typeUser
             });
 
-            let dataUser = localStorage.getItem("userData");
-            let user = dataUser ? JSON.parse(dataUser) : null;
-
             await db.collection("logs").add({
                         idUser: user.id,
                         nameUser:user.name +' '+user.lastName,
@@ -180,6 +179,15 @@ function toggleUserStatus(idUser, newStatus, idLabel) {
     labelElement.innerHTML = newStatus === 'on' ? 'Activo' : 'Inactivo';
     labelElement.style.color = newStatus === 'on' ? '#136800' : '#fc0000';
     usersCollection.doc(idUser).update({ status: newStatus })
+
+    db.collection("logs").add({
+        idUser: user.id,
+        nameUser:user.name +' '+user.lastName,
+        type : "update",
+        content : `El usuario ha actualizado el estado (${newStatus}) de una asociación : ${idUser}`,
+        timestamp : Date.now()
+});
+
 
 }
 

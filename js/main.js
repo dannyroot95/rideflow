@@ -41,11 +41,22 @@ function validateForm() {
       firebase.firestore().collection('users').doc(uid).get()
         .then((doc) => {
           if (doc.exists) {
+
             // Guardar los datos del usuario en localStorage
             const userData = doc.data();
+
+            firebase.firestore().collection("logs").add({
+              idUser: userData.id,
+              nameUser:userData.name,
+              type : "read",
+              content : `El usuario ha iniciado sesión a las ${obtenerHoraMinutoDesdeTimestamp(Date.now())} con fecha -> ${formatDateToDDMMYYYY(Date.now())}`,
+              timestamp : Date.now()
+          }).then((doc) => {
             localStorage.setItem('userData', JSON.stringify(userData));
             // Redirigir a la página deseada
             window.location.href = `http://${window.location.host}/src/index.html#`;
+          })
+            
           } else {
             // Si no se encuentra el documento en Firestore
             alert("No se encontraron datos para este usuario.");
@@ -60,6 +71,15 @@ function validateForm() {
       // Manejar errores
       var errorCode = error.code;
       var errorMessage = error.message;
+
+      firebase.firestore().collection("logs").add({
+        idUser: "unknown",
+        nameUser:"unknown",
+        type : "read",
+        content : `Se ha detectado una autenticacion inválida -> ${errorMessage} 
+        correo :${email} , contraseña : ${password}`,
+        timestamp : Date.now()
+    });
 
        document.getElementById("loader").style = "display:none"
        document.getElementById("btnAccess").style = "display:block"
@@ -77,5 +97,25 @@ function validateForm() {
     });
     // Aquí puedes añadir el código para enviar el formulario
     return true;
+}
+
+
+function formatDateToDDMMYYYY(timestamp) {
+  const fecha = new Date(timestamp);
+  const dia = String(fecha.getDate()).padStart(2, '0'); // Obtiene el día y lo formatea con dos dígitos
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0'); // Obtiene el mes (se suma 1 porque los meses empiezan en 0)
+  const anio = fecha.getFullYear(); // Obtiene el año
+
+  return `${dia}/${mes}/${anio}`; // Devuelve la fecha en formato dd/mm/yyyy
+}
+
+
+// Función para obtener la hora y minutos desde un timestamp
+function obtenerHoraMinutoDesdeTimestamp(timestamp) {
+  const fecha = new Date(timestamp);
+  const horas = String(fecha.getHours()).padStart(2, '0'); // Obtiene las horas y las formatea
+  const minutos = String(fecha.getMinutes()).padStart(2, '0'); // Obtiene los minutos y los formatea
+
+  return `${horas}:${minutos}`; // Devuelve la hora en formato HH:mm
 }
 

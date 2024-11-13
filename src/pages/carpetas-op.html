@@ -1,0 +1,217 @@
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+   
+    <script src="../../vendor/jquery/jquery-3.2.1.min.js"></script>
+    <link rel='stylesheet' type='text/css' media='screen' href='/src/css/style.css'>
+    <link rel='stylesheet' type='text/css' media='screen' href='/css/bootstrap-icons/font/bootstrap-icons.min.css'>
+    <link href="../../vendor/datatables/datatables.min.css" rel="stylesheet">
+    <script src="../../vendor/datatables/datatables.min.js"></script>
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../vendor/sweetalert/sweet.min.js"></script>
+    <script src="../../vendor/xlsexport/xls-export.js"></script>
+
+	<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+  
+
+    <style>
+    div:where(.swal2-container).swal2-backdrop-show, div:where(.swal2-container).swal2-noanimation {
+    background: rgb(255 255 255 / 40%);
+}
+
+    div:where(.swal2-container) div:where(.swal2-popup) {
+        display: none;
+        position: relative;
+        box-sizing: border-box;
+        grid-template-columns: minmax(0, 100%);
+        width: 32em;
+        max-width: 100%;
+        padding: 0 0 1.25em;
+        border: none;
+        border-radius: 5px;
+        background: #093e00;
+        color: #ffffff;
+        font-family: inherit;
+        font-size: 1rem;
+    }
+
+    div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-confirm) {
+        border: 0;
+        border-radius: .25em;
+        background: initial;
+        background-color: #ffffff;
+        color: #000000;
+        font-size: 1em;
+    }
+
+
+    th, td {
+            border: 1px solid rgb(146, 146, 146); /* Bordes de celdas */
+            padding: 8px; /* Espaciado interno en celdas */
+            text-align: center; /* Alineación del texto al centro */
+        }
+        th {
+            background-color: rgb(146, 146, 146); /* Color de fondo para los encabezados */
+        }
+
+        
+.accordion-button:not(.collapsed) {
+  color: #000;
+  background-color: #1a570f29;
+  box-shadow: inset 0 calc(-1* var(--bs-accordion-border-width)) 0 #087402;
+}
+    </style>
+
+</head>
+
+<body> 
+
+    <center>
+            <div style="margin-top: 20%;" class="loader" id="loader" style="display: block;">
+            </div>
+    </center>
+
+    <div id="container" style="display: none;">
+        <table class="table table-hover table-bordered display overflow-hidden" id="tb-data">
+            <thead>
+                <tr> 
+                    <th>Datos</th>
+                </tr>
+            </thead>
+            <tbody>
+             
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal fade" id="details" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Detalle de expediente</h5>
+                    <label style="margin-left: 30%;">Veces observado :&nbsp;<label id="timesObserved"></label></label>&nbsp;&nbsp;<label>|</label>&nbsp;&nbsp;<label>Estado : &nbsp;<label id="status"></label></label>
+                    <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                        <label style="color: #024397;font-weight: bold;">Datos personales</label>
+                        <p></p>
+                        <!-- DNI -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="dni-addon">DNI</span>
+                            <input disabled maxlength="8" placeholder="Ingrese el DNI" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="dni" required>
+                            <span style="background-color: #0043a8;color: #ffffff;" class="input-group-text" id="dni-addon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                  </svg>
+                                &nbsp;  
+                                <a id="linkDownloadDNI" style="color: #ffffff;text-decoration: none;" href="www.google.com" target="_blank">Descargar DNI</a></span>
+                        </div>
+    
+                        <!-- Nombres -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="name-addon">Nombres</span>
+                            <input type="text" class="form-control" id="name" aria-label="Nombres" aria-describedby="name-addon" required 
+                             oninput="validateLetters(this)" disabled style="color: #000000;" onkeypress="return isLetter(event)">
+                        </div>
+    
+                        <!-- Correo Electrónico -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="email-addon">Correo</span>
+                            <input disabled type="email" style="text-transform: lowercase;" class="form-control" id="email" placeholder="Ingresa el correo" aria-label="Correo" aria-describedby="email-addon" required>
+                        </div>
+    
+                        <!-- Teléfono -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="phone-addon">Teléfono</span>
+                            <input disabled placeholder="Ingrese el teléfono ó celular" maxlength="9" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="phone" required>
+                        </div>
+
+                        <label style="color: #44003e;font-weight: bold;">Datos del vehículo</label>
+                        <p></p>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Marca de vehiculo</span>
+                            <input disabled type="text" style="text-transform: uppercase;" class="form-control" id="brand" placeholder="Ejem : HONDA" required>
+                            <span class="input-group-text">Modelo</span>
+                            <input disabled type="text" style="text-transform: uppercase;" class="form-control" id="model" placeholder="Ejem : CF125" required>
+                            <span class="input-group-text">Placa</span>
+                            <input disabled type="text" style="text-transform: uppercase;" class="form-control" id="plate" placeholder="Ejem : FX-4456"  required>
+                        </div>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Año de fabricación</span>
+                            <input disabled maxlength="4" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="yearBuild" required>
+                        </div>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Categoría</span>
+                            <select disabled id="category" required>
+                                <option selected value="L1">L1</option>
+                                <option value="L2">L2</option>
+                                <option value="L3">L3</option>
+                                <option value="L4">L4</option>
+                                <option value="L5">L5</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3 input-group">
+                           <span class="input-group-text">N° de serie</span>
+                            <input disabled type="text" style="text-transform: uppercase;" placeholder="ejem : 8wakyaal50nl029249" class="form-control" id="numSerieVehicle"  required>
+                            <span class="input-group-text">N° de motor</span>
+                            <input disabled type="text" style="text-transform: uppercase;" placeholder="ejem : wh157fmj22a404117"  class="form-control" id="numEngine"  required>
+                        </div>
+    
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Color de vehiculo</span>
+                            <input disabled type="text" style="text-transform: uppercase;" class="form-control" id="color" placeholder="Ejem : ROJO" required>
+                            <span class="input-group-text">Código de chaleco</span>
+                            <input disabled type="text" style="text-transform: uppercase;" class="form-control" id="codeVest" placeholder="Ejem : CD-123" required>
+                        </div>
+    
+
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="inputGroupSelect01">Operación</label>
+                            <select class="form-select" id="inputGroupSelectOperation">
+                              <option value="none" selected disabled>seleccione una opcion...</option>
+                              <option style="color: #0043a8;" value="acepted">Aceptar</option>
+                              <option style="color: #fc0000;" value="observed">Observar</option>
+                              <option value="denied">Rechazar</option>
+                            </select>
+                          </div>
+
+                        <div class="mb-3 input-group" id="addOn-observed">
+                            <textarea style="text-transform: uppercase;" placeholder="Digite la observación..." class="form-control" id="txtObserved" rows="3"></textarea>
+                        </div>
+
+                        <div class="mb-3 input-group" id="div-content-certificated">                
+                            
+                        </div>
+
+                        <div class="mb-3 input-group" id="div-content-resolution">                
+                            
+                        </div>
+
+                        <!-- Botón de Crear -->
+                         <div class="modal-footer" id="btnCorrect" style="display: flex; width: 100%;">
+                            
+                         </div>
+
+                        <center><div class="loader2" id="loader2" style="display: none;"></div></center>
+                  
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/config.js"></script>
+    <script src='/src/pages/js/carpetas-op.js'></script>
+    <script src='/src/pages/js/apiReniec.js'></script>
+</body>
+

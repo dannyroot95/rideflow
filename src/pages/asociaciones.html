@@ -1,0 +1,159 @@
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+   
+    <script src="../../vendor/jquery/jquery-3.2.1.min.js"></script>
+    <link rel='stylesheet' type='text/css' media='screen' href='/src/css/style.css'>
+    <link rel='stylesheet' type='text/css' media='screen' href='/css/bootstrap-icons/font/bootstrap-icons.min.css'>
+    <link href="../../vendor/datatables/datatables.min.css" rel="stylesheet">
+    <script src="../../vendor/datatables/datatables.min.js"></script>
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../vendor/sweetalert/sweet.min.js"></script>
+    <script src="../../vendor/xlsexport/xls-export.js"></script>
+
+	<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+    <style>
+    div:where(.swal2-container).swal2-backdrop-show, div:where(.swal2-container).swal2-noanimation {
+    background: rgb(255 255 255 / 40%);
+}
+
+    div:where(.swal2-container) div:where(.swal2-popup) {
+        display: none;
+        position: relative;
+        box-sizing: border-box;
+        grid-template-columns: minmax(0, 100%);
+        width: 32em;
+        max-width: 100%;
+        padding: 0 0 1.25em;
+        border: none;
+        border-radius: 5px;
+        background: #093e00;
+        color: #ffffff;
+        font-family: inherit;
+        font-size: 1rem;
+    }
+
+    div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-confirm) {
+        border: 0;
+        border-radius: .25em;
+        background: initial;
+        background-color: #ffffff;
+        color: #000000;
+        font-size: 1em;
+    }
+
+    </style>
+  
+</head>
+
+<body>
+
+    <center>
+            <div style="margin-top: 20%;" class="loader" id="loader" style="display: block;">
+            </div>
+    </center>
+
+    <div id="container" style="display: none;">
+          <table class="table table-hover table-bordered display overflow-hidden" id="tb-data">
+            <thead>
+                <tr> 
+                    <th></th>
+                    <th>Asociación</th>
+                    <th>RUC</th>
+                    <th>Teléfono</th>
+                    <th>Estado</th>
+                    <th>Correo</th>
+                </tr>
+            </thead>
+            <tbody>
+             
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal fade" id="userModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Complete los campos para crear una asociación</h5>
+                    <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createUserForm">
+                        <!-- DNI -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="dni-addon">DNI propietario</span>
+                            <input maxlength="8" placeholder="Ingrese el DNI" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="dni" required>
+                        </div>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="dni-addon">RUC</span>
+                            <input maxlength="11" placeholder="Ingrese el RUC" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="ruc" required>
+                        </div>
+
+                        <!-- Nombres -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="name-addon">Nombres</span>
+                            <input type="text" class="form-control" id="name" placeholder="Ingresa los nombres" aria-label="Nombres" aria-describedby="name-addon" required 
+                             oninput="validateLetters(this)" onkeypress="return isLetter(event)">
+                        </div>
+
+                        <!-- Nombres aso-->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="asociation-addon">Nombre de la asociación</span>
+                            <input type="text" class="form-control" id="association" placeholder="Ingresa la asociación" aria-label="asociacion" aria-describedby="name-addon" required 
+                             oninput="validateLetters(this)" onkeypress="return isLetter(event)">
+                        </div>
+
+                        
+                        <!-- Direccion -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="address-addon">Dirección</span>
+                            <input type="text" class="form-control" id="address" placeholder="Ingrese la dirección" aria-label="direccion" aria-describedby="email-addon" required>
+                        </div>
+    
+                        <!-- Correo Electrónico -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="email-addon">Correo</span>
+                            <input type="email" style="text-transform: lowercase;" class="form-control" id="email" placeholder="Ingresa el correo" aria-label="Correo" aria-describedby="email-addon" required>
+                        </div>
+    
+                        <!-- Teléfono -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="phone-addon">Teléfono</span>
+                            <input placeholder="Ingrese el teléfono ó celular" maxlength="9" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="phone" required>
+                        </div>
+
+                          <!-- licence -->
+                          <div class="mb-3 input-group">
+                            <span class="input-group-text" id="file-function-addon">Licencia de funcionamiento</span>
+                            <input placeholder="Sube la licencia de funcionamiento en PDF" maxlength="9" type="file" class="form-control" id="file-function" required>
+                        </div>
+    
+                        <!-- Contraseña -->
+                        <label style="color: red;font-weight: 600;">**La contraseña debe tener más de 5 caracteres</label>  
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text" id="password-addon">Contraseña</span>
+                            <input type="password" class="form-control" id="password" placeholder="Ingresa la contraseña" aria-label="Contraseña" aria-describedby="password-addon" required>
+                        </div>
+    
+                        <!-- Botón de Crear -->
+                         <div class="modal-footer">
+                            <button type="submit" id="btn-add-user" class="btn btn-primary">Crear asociacion</button>
+                         </div>
+   
+                        <center><div class="loader2" id="loader2" style="display: none;"></div></center>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../../js/config.js"></script>
+    <script src='/src/pages/js/asociaciones.js'></script>
+</body>

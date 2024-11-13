@@ -1,0 +1,102 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cards de Usuarios</title>
+    <link rel='stylesheet' type='text/css' media='screen' href='/src/css/style.css'>
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../vendor/sweetalert/sweet.min.js"></script>
+
+	<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+    <script src="https://unpkg.com/signature_pad@4.1.6/dist/signature_pad.umd.js"></script>
+
+</head>
+
+<style>
+
+div:where(.swal2-container).swal2-backdrop-show, div:where(.swal2-container).swal2-noanimation {
+    background: rgb(255 255 255 / 40%);
+}
+
+    div:where(.swal2-container) div:where(.swal2-popup) {
+        display: none;
+        position: relative;
+        box-sizing: border-box;
+        grid-template-columns: minmax(0, 100%);
+        width: 32em;
+        max-width: 100%;
+        padding: 0 0 1.25em;
+        border: none;
+        border-radius: 5px;
+        background: #093e00;
+        color: #ffffff;
+        font-family: inherit;
+        font-size: 1rem;
+    }
+
+    div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-confirm) {
+        border: 0;
+        border-radius: .25em;
+        background: initial;
+        background-color: #ffffff;
+        color: #000000;
+        font-size: 1em;
+    }
+
+body {
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+}
+
+    .container {
+        margin-bottom: 20px; /* Espaciado entre elementos */
+    }
+
+    #signature-pad {
+        border: 1px solid #000; /* Borde del canvas */
+        display: block;
+        margin: 0 auto; /* Centra el canvas horizontalmente */
+    }
+
+    .btn {
+        display: block; /* Hace que el botón ocupe toda la línea */
+        width: 100%; /* Extiende el botón al ancho completo del contenedor */
+    }
+</style>
+</head>
+<body>
+
+<div class="container input-group mb-3">
+    <span class="input-group-text" id="basic-addon1">DNI</span>
+    <input id="dni" type="number" class="form-control">
+    <span class="input-group-text" id="basic-addon1">Nombre de sub gerente</span>
+    <input disabled id="name" type="text" class="form-control">
+</div>
+
+<div class="container"><center>
+    <label>Nueva firma</label>
+    <canvas id="signature-pad" width="400" height="200"></canvas>
+    <center><label>Firma Actual</label></center>
+    <canvas id="signature-pad2" width="400" height="200"></canvas>
+</center>
+</div>
+
+<div class="container">
+    <center><button style="width: 300px;" class="btn btn-danger" id="clear">Limpiar Firma</button></center>
+    <p></p>
+    <center><button style="width: 300px;" class="btn btn-success" id="save">Guardar</button></center>
+    
+    <center style="margin-top: 20px;"><div class="loader2" id="loader2" style="display: none;"></div></center>
+
+</div>
+
+<script src="../../js/config.js"></script>
+<script src="https://unpkg.com/signature_pad"></script>
+<script src="../pages/js/apiReniec.js"> </script>
+<script src="../pages/js/configuracion.js"> </script>
+
+</body>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html class="light">
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>RideFlow</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+
+
+  <script>
+    var dataUser = localStorage.getItem("userData");
+    var user = dataUser ? JSON.parse(dataUser) : null;
+   if(user == null){
+    window.location.href = `http://${window.location.host}`;
+   }
+  </script>
+  <script src="/vendor/jquery/jquery-3.2.1.min.js"></script>
+
+  <link rel='stylesheet' type='text/css' media='screen' href='/src/css/style.css'>
+
+  <link href="../../vendor/datatables/datatables.min.css" rel="stylesheet">
+  <script src="../../vendor/datatables/datatables.min.js"></script>
+  <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+  <script src="../../vendor/sweetalert/sweet.min.js"></script>
+
+  <script src="https://unpkg.com/signature_pad@4.1.6/dist/signature_pad.umd.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+  
+</head>
+
+<style>
+      .container {
+        margin-bottom: 20px; /* Espaciado entre elementos */
+    }
+
+    #signature-pad {
+        border: 1px solid #000; /* Borde del canvas */
+        display: block;
+        margin: 0 auto; /* Centra el canvas horizontalmente */
+    }
+
+    .btn {
+        display: block; /* Hace que el botón ocupe toda la línea */
+        width: 100%; /* Extiende el botón al ancho completo del contenedor */
+    }
+
+    #upload-image {
+      display: none;
+    }
+    
+
+</style>
+
+<body>
+
+  <div class="app-container" style="width: 100%;">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="app-icon">
+          <img src="/images/banner_icon.png" width="200px" />
+        </div>
+      </div>
+      <div id="type-user" style="margin-top: -12px;margin-bottom: 18px;margin-left: 8%;font-size: 11px;" class="account-info-name"></div>
+      <ul class="sidebar-list" id="sidebarList">
+        
+        <!---SIDEBAR CONTENT-->
+
+      </ul>
+      <script src="/src/js/modules.js"></script>
+
+      <div class="account-info">
+        <div class="account-info-picture">
+          <img src="https://images.unsplash.com/photo-1527736947477-2790e28f3443?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTE2fHx3b21hbnxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60" alt="Account">
+        </div>
+        <div class="account-info-name" id="nameUser">Danny S.</div>
+        <button class="account-info-more" onclick="logout()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </button>
+      </div>
+    </div> 
+    <div class="app-content">
+      <div class="app-content-header">
+        <h1 class="app-content-headerText" id="titlePage"></h1>
+      
+      </div>
+      <div class="app-content-actions" style="width: 100%;height: 100%;">
+        
+
+
+      </div>
+    </div>
+  </div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="notificationModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Notificaciones</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table" id="tb-data">
+          <thead>
+            <tr>
+              <th></th>
+              <th>#</th>
+              <th>Mensaje</th>
+            </tr>
+          </thead>
+          <tbody id="notificationTableBody">
+            <!-- Las filas de las notificaciones se llenarán aquí -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal -->
+
+<!-- Modal -->
+<div class="modal fade" style="background-color: #ffffff8f;"  id="notificationModalDetail" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="title"></h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+       
+        <div class="mb-3 input-group">
+          <span class="input-group-text">Usuario</span>
+          <input type="text" disabled style="color: black;background-color: white;" id="association" class="form-control">
+        </div>
+
+        <div class="mb-3 input-group">
+          <textarea rows="3" disabled style="color: black;background-color: white;" id="content" class="form-control"></textarea>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal -->
+
+
+<!-- Modal -->
+<div class="modal fade" style="background-color: #ffffff8f;"  id="configModalDetail" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="title"></h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+       
+        <div class="container input-group mb-3">
+          <span class="input-group-text" id="basic-addon1">DNI</span>
+          <input id="dni" type="number" class="form-control">
+          <span class="input-group-text" id="basic-addon1">Nombre de sub gerente</span>
+          <input disabled id="name" type="text" class="form-control">
+      </div>
+      
+      <div class="container"><center>
+        <center><label>Firma Actual</label></center>
+          <canvas id="signature-pad" width="400" height="200"></canvas>
+      </center>
+      </div>
+      
+      <div class="container">
+          <center><button style="width: 300px;" class="btn btn-danger" id="clear">Limpiar Firma</button></center>
+          <p></p>
+          <center><button style="width: 300px;" class="btn btn-primary" id="upload-signature">Subir firma</button>
+          <input type="file" id="upload-image" accept="image/*" /></center>
+          <p></p>
+          <center><button style="width: 300px;" class="btn btn-success" id="save">Guardar</button></center>
+          
+          <center style="margin-top: 20px;"><div class="loader2" id="loader2" style="display: none;"></div></center>
+      
+      </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal -->
+
+  <div class="notification-icon" id="notification-icon">
+    <svg class="bell" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.93 6 11V16L4 18V19H20V18L18 16Z" fill="currentColor"/>
+    </svg>
+    <div id="count" class="count"></div>
+</div>
+
+
+    <script src='/js/config.js'></script>
+    <script src="/src/pages/js/apiReniec.js"> </script>
+    <script src='/src/js/main.js'></script>
+    <script src='/src/js/notification.js'></script>
+</body>
+</html>
+

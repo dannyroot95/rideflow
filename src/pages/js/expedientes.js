@@ -118,6 +118,7 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
     const dni = document.getElementById("dni").value;
     const phone = document.getElementById("phone").value;
     const dniFile = document.getElementById("dniFile").files[0];
+    const sunarpFile = document.getElementById("sunarpFile").files[0];
     const brand = document.getElementById("brand").value;
     const model = document.getElementById("model").value;
     const plate = document.getElementById("plate").value;
@@ -147,11 +148,19 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
             return; // Salir del evento submit
         }
 
-        // Subir el archivo a Firebase Storage
+        
         const storageRef = firebase.storage().ref();
+
+        // Subir el archivo DNI a Firebase Storage
         const fileRef = storageRef.child('associations/'+user.ruc+"/files/dni/"+dni+"/"+ dniFile.name);
         await fileRef.put(dniFile);
         const fileURL = await fileRef.getDownloadURL();
+
+        // Subir el archivo SUNARP a Firebase Storage
+        const fileRef2 = storageRef.child('associations/'+user.ruc+"/files/sunarp/"+dni+"/"+ sunarpFile.name);
+        await fileRef2.put(sunarpFile);
+        const fileURLSunarp = await fileRef2.getDownloadURL();
+
         const randomNumber = Math.floor(Math.random() * 10000).toString() + dni;
 
         // Crear un nuevo documento en Firestore con un ID automático
@@ -163,6 +172,7 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
             email: email,
             phone: phone,
             fileUrlDNI: fileURL,
+            fileURLSunarp:fileURLSunarp,
             status: "registered",
             folder: "",
             idInCharge : "",
@@ -368,6 +378,9 @@ function showDetails(button) {
     document.getElementById("d-color").value = fileData.color
     document.getElementById("d-codeVest").value = fileData.codeVest
 
+    document.getElementById("d-sunarpObs").style.display = "none"
+
+
     document.getElementById("d-status").innerHTML = getStatusFromDetails(fileData.status)
 
     if(fileData.status == "registered" || fileData.status == "migrated" || fileData.status == "corrected" || fileData.status == "acepted"){
@@ -461,7 +474,9 @@ function showDetails(button) {
         document.getElementById("d-txtObserved").disabled = true
         document.getElementById("d-txtObserved").style = "font-weight:bold;background-color:white;text-transform: uppercase;color:red;"
 
-         document.getElementById("d-div-content-certificated").innerHTML = ``
+        document.getElementById("d-sunarpObs").style.display = "flex"
+
+        document.getElementById("d-div-content-certificated").innerHTML = ``
 
         document.getElementById("d-btnCorrect").innerHTML = `
         <button id="d-btnSendCorrected" class="btn btn-success" onclick="sendOberved('${fileData.id}','${fileData.idFolder}','${fileData.idInCharge}','${fileData.folder}','${fileData.code}','${fileData.nameAssociation}')" >Enviar correción</button>`
@@ -577,7 +592,7 @@ function obtenerHoraMinutoDesdeTimestamp(timestamp) {
     return `${horas}:${minutos}`; // Devuelve la hora en formato HH:mm
 }
 
-function sendOberved(idFile, idFolder, idInCharge, desk, code,nameAssociation) {
+function sendOberved(idFile, idFolder, idInCharge, desk, code, nameAssociation) {
     // Captura los valores de los campos
     const dni = document.getElementById('d-dni').value.trim();
     const name = document.getElementById('d-name').value.trim();
@@ -594,10 +609,9 @@ function sendOberved(idFile, idFolder, idInCharge, desk, code,nameAssociation) {
     const codeVest = document.getElementById("d-codeVest").value;
     const category = document.getElementById("d-category").value;
 
-
     // Validación de campos vacíos
     if (!dni || !name || !email || !phone || !brand || !model || !plate || !yearBuild || !numSerieVehicle ||
-         !numEngine || !color || !codeVest || !category) {
+        !numEngine || !color || !codeVest || !category) {
         Swal.fire({
             title: "Campos incompletos",
             text: "Por favor, completa todos los campos antes de continuar.",
@@ -608,167 +622,170 @@ function sendOberved(idFile, idFolder, idInCharge, desk, code,nameAssociation) {
 
     // Muestra el loader
     document.getElementById('d-loader2').style.display = 'block';
-    document.getElementById("d-btn-close-modal").style.display = "none"
+    document.getElementById("d-btn-close-modal").style.display = "none";
     document.getElementById("d-btnSendCorrected").disabled = true;
 
-    // Captura el archivo seleccionado
+    // Captura los archivos seleccionados
     const dniFile = document.getElementById('d-dniFile').files[0];
+    const sunarpFile = document.getElementById('d-sunarpFile').files[0]; // Nuevo archivo
 
+    // Subir ambos archivos si están presentes
+    const uploadPromises = [];
+
+    // Subir archivo DNI
     if (dniFile) {
-        // Referencia a Firebase Storage con la ruta personalizada
-        const storageRef = firebase.storage().ref();
-        const fileRef = storageRef.child(`associations/${user.ruc}/files/dni/${dni}/${dniFile.name}`);
-
-        // Subir el archivo a Firebase Storage
-        const uploadTask = fileRef.put(dniFile);
-
-        uploadTask.on('state_changed',
-            (snapshot) => {
-                // Progreso de la subida del archivo (opcional, si deseas mostrar progreso)
-                let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log('Subida de archivo: ' + progress + '%');
-            },
-            (error) => {
-                // Maneja los errores de la subida
-                console.error('Error al subir el archivo: ', error);
-                document.getElementById('d-loader2').style.display = 'none';
-                document.getElementById("d-btn-close-modal").style.display = "block";
-            },
-            () => {
-                // Subida exitosa, obtenemos la URL del archivo
-                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                    console.log('Archivo disponible en: ', downloadURL);
-
-                    // Guarda los datos del formulario y la URL del archivo en Firestore
-                    const fileRef = firebase.firestore().collection('files').doc(idFile);
-
-                    fileRef.update({
-                        dni: dni,
-                        name: name,
-                        email: email,
-                        phone: phone,
-                        brand:brand,
-                        model:model,
-                        plate:plate,
-                        yearBuild:yearBuild,
-                        numSerieVehicle:numSerieVehicle,
-                        numEngine:numEngine,
-                        color:color,
-                        codeVest:codeVest,
-                        category:category,
-                        status: "corrected",
-                        dniFileURL: downloadURL, // Guardamos la URL del archivo
-                        timestamp: Date.now() // Timestamp opcional
-                    });
-
-                
-                    firebase.firestore().collection('folders').doc(idFolder).update({ status: "corrected",dateRegister : Date.now()})
-                        .then(() => {
-
-                            firebase.firestore().collection("notifications").add({
-                                idFolder: idFolder,
-                                name:user.name,
-                                idUser : idInCharge,
-                                title : `El expediente #${code} ha sido corregido`,
-                                type : "file",
-                                content : `La Asociacion ${nameAssociation} con el expediente #${code} ha sido corregido en la carpeta : ${desk}`,
-                                isOpen : false,
-                                timestamp : Date.now()
-                            });
-
-                            firebase.firestore().collection("logs").add({
-                                idUser: user.id,
-                                nameUser:user.name,
-                                type : "update",
-                                content : `El usuario ha actualizado un estado a : corregido`,
-                                timestamp : Date.now()
-                            });
-
-                            Swal.fire({
-                                title: "Muy bien",
-                                text: "Expediente corregido!",
-                                icon: "success"
-                            });
-                            $('#details').modal('hide');
-                            document.getElementById('d-loader2').style.display = 'none';
-                            document.getElementById("d-btn-close-modal").style.display = "block";
-                        })
-                        .catch((error) => {
-                            Swal.fire({
-                                title: "Oops",
-                                text: "Ocurrió un error!",
-                                icon: "error"
-                            });
-                            document.getElementById('d-loader2').style.display = 'none';
-                            document.getElementById("d-btn-close-modal").style.display = "block";
-                        });
-                });
-            }
-        );
+        const dniFileRef = firebase.storage().ref().child(`associations/${user.ruc}/files/dni/${dni}/${dniFile.name}`);
+        const dniUploadTask = dniFileRef.put(dniFile).then(snapshot => snapshot.ref.getDownloadURL());
+        uploadPromises.push(dniUploadTask);
     } else {
-        // Si no se seleccionó ningún archivo, simplemente guarda los demás datos en Firestore
-        const fileRef = firebase.firestore().collection('files').doc(idFile);
+        uploadPromises.push(Promise.resolve(null)); // Si no hay archivo, mantener la consistencia
+    }
 
-        fileRef.update({
-            dni: dni,
-            name: name,
-            email: email,
-            phone: phone,
-            brand:brand,
-            model:model,
-            plate:plate,
-            yearBuild:yearBuild,
-            numSerieVehicle:numSerieVehicle,
-            numEngine:numEngine,
-            color:color,
-            codeVest:codeVest,
-            category:category,
-            status: "corrected",
-            timestamp: Date.now() // Timestamp opcional
+    // Subir archivo SUNARP
+    if (sunarpFile) {
+        const sunarpFileRef = firebase.storage().ref().child(`associations/${user.ruc}/files/sunarp/${dni}/${sunarpFile.name}`);
+        const sunarpUploadTask = sunarpFileRef.put(sunarpFile).then(snapshot => snapshot.ref.getDownloadURL());
+        uploadPromises.push(sunarpUploadTask);
+    } else {
+        uploadPromises.push(Promise.resolve(null)); // Si no hay archivo, mantener la consistencia
+    }
+
+    Promise.all(uploadPromises)
+        .then(([dniFileURL, sunarpFileURL]) => {
+            // Guarda los datos del formulario y las URLs de los archivos en Firestore
+            const fileRef = firebase.firestore().collection('files').doc(idFile);
+
+            let myUpdate = {}
+
+            if(dniFile && sunarpFile){
+                myUpdate = {
+                    dni: dni,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    brand: brand,
+                    model: model,
+                    plate: plate,
+                    yearBuild: yearBuild,
+                    numSerieVehicle: numSerieVehicle,
+                    numEngine: numEngine,
+                    color: color,
+                    codeVest: codeVest,
+                    category: category,
+                    status: "corrected",
+                    fileUrlDNI: dniFileURL,
+                    fileURLSunarp: sunarpFileURL, // URL del archivo SUNARP (si existe)
+                    timestamp: Date.now()
+                }
+            }else if(dniFile){
+                myUpdate = {
+                    dni: dni,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    brand: brand,
+                    model: model,
+                    plate: plate,
+                    yearBuild: yearBuild,
+                    numSerieVehicle: numSerieVehicle,
+                    numEngine: numEngine,
+                    color: color,
+                    codeVest: codeVest,
+                    category: category,
+                    status: "corrected",
+                    fileUrlDNI: dniFileURL, // URL del archivo DNI (si existe)
+                    timestamp: Date.now()
+                }
+            }else if(sunarpFile){
+                myUpdate = {
+                    dni: dni,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    brand: brand,
+                    model: model,
+                    plate: plate,
+                    yearBuild: yearBuild,
+                    numSerieVehicle: numSerieVehicle,
+                    numEngine: numEngine,
+                    color: color,
+                    codeVest: codeVest,
+                    category: category,
+                    status: "corrected",
+                    fileURLSunarp:sunarpFileURL, // URL del archivo DNI (si existe)
+                    timestamp: Date.now()
+                }
+            }else{
+                myUpdate = {
+                    dni: dni,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    brand: brand,
+                    model: model,
+                    plate: plate,
+                    yearBuild: yearBuild,
+                    numSerieVehicle: numSerieVehicle,
+                    numEngine: numEngine,
+                    color: color,
+                    codeVest: codeVest,
+                    category: category,
+                    status: "corrected",
+                    timestamp: Date.now()
+            }
+        }
+
+            return fileRef.update(myUpdate);
         })
         .then(() => {
-            firebase.firestore().collection('folders').doc(idFolder).update({ status: "corrected" });
-
-            firebase.firestore().collection("notifications").add({
+            return firebase.firestore().collection('folders').doc(idFolder).update({ 
+                status: "corrected", 
+                dateRegister: Date.now() 
+            });
+        })
+        .then(() => {
+            return firebase.firestore().collection("notifications").add({
                 idFolder: idFolder,
-                name:nameAssociation,
-                idUser : idInCharge,
-                title : `El expediente #${code} ha sido corregido`,
-                type : "file",
-                content : `La Asociacion ${nameAssociation} con el expediente #${code} ha sido corregido en la carpeta : ${desk}`,
-                isOpen : false,
-                timestamp : Date.now()
+                name: user.name,
+                idUser: idInCharge,
+                title: `El expediente #${code} ha sido corregido`,
+                type: "file",
+                content: `La Asociación ${nameAssociation} con el expediente #${code} ha sido corregido en la carpeta: ${desk}`,
+                isOpen: false,
+                timestamp: Date.now()
             });
-
-            firebase.firestore().collection("logs").add({
+        })
+        .then(() => {
+            return firebase.firestore().collection("logs").add({
                 idUser: user.id,
-                nameUser:user.name,
-                type : "update",
-                content : `El usuario ha actualizado un estado a : corregido`,
-                timestamp : Date.now()
+                nameUser: user.name,
+                type: "update",
+                content: `El usuario ha actualizado un estado a: corregido`,
+                timestamp: Date.now()
             });
-
-
+        })
+        .then(() => {
             Swal.fire({
                 title: "Muy bien",
                 text: "Expediente corregido!",
                 icon: "success"
             });
             $('#details').modal('hide');
-            document.getElementById("d-btn-close-modal").style.display = "block";
             document.getElementById('d-loader2').style.display = 'none';
+            document.getElementById("d-btn-close-modal").style.display = "block";
         })
-        .catch((error) => {
+        .catch(error => {
             Swal.fire({
                 title: "Oops",
                 text: "Ocurrió un error!",
                 icon: "error"
             });
-            document.getElementById("d-btn-close-modal").style.display = "block";
             document.getElementById('d-loader2').style.display = 'none';
+            document.getElementById("d-btn-close-modal").style.display = "block";
+            console.error('Error:', error);
         });
-    }
 }
+
 
 
 function exportToExcel(){

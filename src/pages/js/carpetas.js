@@ -149,6 +149,8 @@ function showDetails(button) {
 
     document.getElementById("status").innerHTML = getStatusFromDetails(fileData.status)
 
+    document.getElementById("sunarpObs").style.display = "none"
+
     if(fileData.status != "observed"){
         //addOn-observed btnCorect
         document.getElementById("dni").disabled = true
@@ -223,11 +225,13 @@ function showDetails(button) {
         document.getElementById("color").disabled = false
         document.getElementById("codeVest").disabled = false
 
+        document.getElementById("sunarpObs").style.display = "flex"
+
         document.getElementById("addOn-observed").style = "display:flex;width:100%"
         document.getElementById("btnCorrect").style = "display:flex;width:100%"
         document.getElementById("txtObserved").value = fileData.txtNote
         document.getElementById("txtObserved").disabled = true
-        document.getElementById("txtObserved").style = "text-transform: uppercase;color:black;"
+        document.getElementById("txtObserved").style = "font-weight:bold;background-color:white;text-transform: uppercase;color:red;"
 
         document.getElementById("btnCorrect").innerHTML = `
         <button id="btnSendCorrected" class="btn btn-success" onclick="sendOberved('${fileData.id}','${fileData.idFolder}','${fileData.idInCharge}','${fileData.folder}','${fileData.code}','${fileData.nameAssociation}')" >Enviar correción</button>`
@@ -298,15 +302,26 @@ function obtenerHoraMinutoDesdeTimestamp(timestamp) {
 }
 
 // Función para enviar el archivo DNI escaneado a Firestore
-function sendOberved(idFile, idFolder, idInCharge, desk, code,nameAssociation) {
+function sendOberved(idFile, idFolder, idInCharge, desk, code, nameAssociation) {
     // Captura los valores de los campos
     const dni = document.getElementById('dni').value.trim();
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
 
+    const brand = document.getElementById("brand").value;
+    const model = document.getElementById("model").value;
+    const plate = document.getElementById("plate").value;
+    const yearBuild = document.getElementById("yearBuild").value;
+    const numSerieVehicle = document.getElementById("numSerieVehicle").value;
+    const numEngine = document.getElementById("numEngine").value;
+    const color = document.getElementById("color").value;
+    const codeVest = document.getElementById("codeVest").value;
+    const category = document.getElementById("category").value;
+
     // Validación de campos vacíos
-    if (!dni || !name || !email || !phone) {
+    if (!dni || !name || !email || !phone || !brand || !model || !plate || !yearBuild || !numSerieVehicle ||
+        !numEngine || !color || !codeVest || !category) {
         Swal.fire({
             title: "Campos incompletos",
             text: "Por favor, completa todos los campos antes de continuar.",
@@ -317,148 +332,168 @@ function sendOberved(idFile, idFolder, idInCharge, desk, code,nameAssociation) {
 
     // Muestra el loader
     document.getElementById('loader2').style.display = 'block';
-    document.getElementById("btn-close-modal").style.display = "none"
+    document.getElementById("btn-close-modal").style.display = "none";
     document.getElementById("btnSendCorrected").disabled = true;
 
-    // Captura el archivo seleccionado
+    // Captura los archivos seleccionados
     const dniFile = document.getElementById('dniFile').files[0];
+    const sunarpFile = document.getElementById('sunarpFile').files[0]; // Nuevo archivo
 
+    // Subir ambos archivos si están presentes
+    const uploadPromises = [];
+
+    // Subir archivo DNI
     if (dniFile) {
-        // Referencia a Firebase Storage con la ruta personalizada
-        const storageRef = firebase.storage().ref();
-        const fileRef = storageRef.child(`associations/${user.ruc}/files/dni/${dni}/${dniFile.name}`);
-
-        // Subir el archivo a Firebase Storage
-        const uploadTask = fileRef.put(dniFile);
-
-        uploadTask.on('state_changed',
-            (snapshot) => {
-                // Progreso de la subida del archivo (opcional, si deseas mostrar progreso)
-                let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log('Subida de archivo: ' + progress + '%');
-            },
-            (error) => {
-                // Maneja los errores de la subida
-                console.error('Error al subir el archivo: ', error);
-                document.getElementById('loader2').style.display = 'none';
-                document.getElementById("btn-close-modal").style.display = "block";
-            },
-            () => {
-                // Subida exitosa, obtenemos la URL del archivo
-                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                    console.log('Archivo disponible en: ', downloadURL);
-
-                    // Guarda los datos del formulario y la URL del archivo en Firestore
-                    const fileRef = firebase.firestore().collection('files').doc(idFile);
-
-                    fileRef.update({
-                        dni: dni,
-                        name: name,
-                        email: email,
-                        phone: phone,
-                        status: "corrected",
-                        dniFileURL: downloadURL, // Guardamos la URL del archivo
-                        timestamp: Date.now() // Timestamp opcional
-                    });
-
-                
-                    firebase.firestore().collection('folders').doc(idFolder).update({ status: "corrected",dateRegister : Date.now()})
-                        .then(() => {
-
-                            firebase.firestore().collection("notifications").add({
-                                idFolder: idFolder,
-                                name:user.name,
-                                idUser : idInCharge,
-                                title : `El expediente #${code} ha sido corregido`,
-                                type : "file",
-                                content : `La Asociacion ${nameAssociation} con el expediente #${code} ha sido corregido en la carpeta : ${desk}`,
-                                isOpen : false,
-                                timestamp : Date.now()
-                            });
-
-                            firebase.firestore().collection("logs").add({
-                                idUser: user.id,
-                                nameUser:user.name,
-                                type : "update",
-                                content : `El usuario ha actualizado un estado a : corregido`,
-                                timestamp : Date.now()
-                            });
-
-                            Swal.fire({
-                                title: "Muy bien",
-                                text: "Expediente corregido!",
-                                icon: "success"
-                            });
-                            $('#details').modal('hide');
-                            document.getElementById('loader2').style.display = 'none';
-                            document.getElementById("btn-close-modal").style.display = "block";
-                        })
-                        .catch((error) => {
-                            Swal.fire({
-                                title: "Oops",
-                                text: "Ocurrió un error!",
-                                icon: "error"
-                            });
-                            document.getElementById('loader2').style.display = 'none';
-                            document.getElementById("btn-close-modal").style.display = "block";
-                        });
-                });
-            }
-        );
+        const dniFileRef = firebase.storage().ref().child(`associations/${user.ruc}/files/dni/${dni}/${dniFile.name}`);
+        const dniUploadTask = dniFileRef.put(dniFile).then(snapshot => snapshot.ref.getDownloadURL());
+        uploadPromises.push(dniUploadTask);
     } else {
-        // Si no se seleccionó ningún archivo, simplemente guarda los demás datos en Firestore
-        const fileRef = firebase.firestore().collection('files').doc(idFile);
+        uploadPromises.push(Promise.resolve(null)); // Si no hay archivo, mantener la consistencia
+    }
 
-        fileRef.update({
-            dni: dni,
-            name: name,
-            email: email,
-            phone: phone,
-            status: "corrected",
-            timestamp: Date.now() // Timestamp opcional
+    // Subir archivo SUNARP
+    if (sunarpFile) {
+        const sunarpFileRef = firebase.storage().ref().child(`associations/${user.ruc}/files/sunarp/${dni}/${sunarpFile.name}`);
+        const sunarpUploadTask = sunarpFileRef.put(sunarpFile).then(snapshot => snapshot.ref.getDownloadURL());
+        uploadPromises.push(sunarpUploadTask);
+    } else {
+        uploadPromises.push(Promise.resolve(null)); // Si no hay archivo, mantener la consistencia
+    }
+
+    Promise.all(uploadPromises)
+        .then(([dniFileURL, sunarpFileURL]) => {
+            // Guarda los datos del formulario y las URLs de los archivos en Firestore
+            const fileRef = firebase.firestore().collection('files').doc(idFile);
+
+            let myUpdate = {}
+
+            if(dniFile && sunarpFile){
+                myUpdate = {
+                    dni: dni,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    brand: brand,
+                    model: model,
+                    plate: plate,
+                    yearBuild: yearBuild,
+                    numSerieVehicle: numSerieVehicle,
+                    numEngine: numEngine,
+                    color: color,
+                    codeVest: codeVest,
+                    category: category,
+                    status: "corrected",
+                    fileUrlDNI: dniFileURL,
+                    fileURLSunarp: sunarpFileURL, // URL del archivo SUNARP (si existe)
+                    timestamp: Date.now()
+                }
+            }else if(dniFile){
+                myUpdate = {
+                    dni: dni,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    brand: brand,
+                    model: model,
+                    plate: plate,
+                    yearBuild: yearBuild,
+                    numSerieVehicle: numSerieVehicle,
+                    numEngine: numEngine,
+                    color: color,
+                    codeVest: codeVest,
+                    category: category,
+                    status: "corrected",
+                    fileUrlDNI: dniFileURL, // URL del archivo DNI (si existe)
+                    timestamp: Date.now()
+                }
+            }else if(sunarpFile){
+                myUpdate = {
+                    dni: dni,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    brand: brand,
+                    model: model,
+                    plate: plate,
+                    yearBuild: yearBuild,
+                    numSerieVehicle: numSerieVehicle,
+                    numEngine: numEngine,
+                    color: color,
+                    codeVest: codeVest,
+                    category: category,
+                    status: "corrected",
+                    fileURLSunarp:sunarpFileURL, // URL del archivo DNI (si existe)
+                    timestamp: Date.now()
+                }
+            }else{
+                myUpdate = {
+                    dni: dni,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    brand: brand,
+                    model: model,
+                    plate: plate,
+                    yearBuild: yearBuild,
+                    numSerieVehicle: numSerieVehicle,
+                    numEngine: numEngine,
+                    color: color,
+                    codeVest: codeVest,
+                    category: category,
+                    status: "corrected",
+                    timestamp: Date.now()
+            }
+        }
+
+            return fileRef.update(myUpdate);
         })
         .then(() => {
-            firebase.firestore().collection('folders').doc(idFolder).update({ status: "corrected" });
-
-            firebase.firestore().collection("notifications").add({
+            return firebase.firestore().collection('folders').doc(idFolder).update({ 
+                status: "corrected", 
+                dateRegister: Date.now() 
+            });
+        })
+        .then(() => {
+            return firebase.firestore().collection("notifications").add({
                 idFolder: idFolder,
-                name:user.name,
-                idUser : idInCharge,
-                title : `El expediente #${code} ha sido corregido`,
-                type : "file",
-                content : `La Asociacion ${nameAssociation} con el expediente #${code} ha sido corregido en la carpeta : ${desk}`,
-                isOpen : false,
-                timestamp : Date.now()
+                name: user.name,
+                idUser: idInCharge,
+                title: `El expediente #${code} ha sido corregido`,
+                type: "file",
+                content: `La Asociación ${nameAssociation} con el expediente #${code} ha sido corregido en la carpeta: ${desk}`,
+                isOpen: false,
+                timestamp: Date.now()
             });
-
-            
-            firebase.firestore().collection("logs").add({
+        })
+        .then(() => {
+            return firebase.firestore().collection("logs").add({
                 idUser: user.id,
-                nameUser:user.name,
-                type : "update",
-                content : `El usuario ha actualizado un estado a : corregido`,
-                timestamp : Date.now()
+                nameUser: user.name,
+                type: "update",
+                content: `El usuario ha actualizado un estado a: corregido`,
+                timestamp: Date.now()
             });
-
+        })
+        .then(() => {
             Swal.fire({
                 title: "Muy bien",
                 text: "Expediente corregido!",
                 icon: "success"
             });
             $('#details').modal('hide');
-            document.getElementById("btn-close-modal").style.display = "block";
             document.getElementById('loader2').style.display = 'none';
+            document.getElementById("btn-close-modal").style.display = "block";
         })
-        .catch((error) => {
+        .catch(error => {
             Swal.fire({
                 title: "Oops",
                 text: "Ocurrió un error!",
                 icon: "error"
             });
-            document.getElementById("btn-close-modal").style.display = "block";
             document.getElementById('loader2').style.display = 'none';
+            document.getElementById("btn-close-modal").style.display = "block";
+            console.error('Error:', error);
         });
-    }
 }
 
 function exportToExcel(){

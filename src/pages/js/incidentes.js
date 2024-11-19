@@ -50,9 +50,18 @@ incidentsCollection.onSnapshot((snapshot) => {
     snapshot.forEach((doc) => {
         const inData = doc.data();
 
+        let details = `<center><button class="btn btn-light" 
+        style="background-color:#093e00;color:white;" data-user='${JSON.stringify(inData)}' 
+        onclick="showDetails(this)">Ver</button></center>`;
+        
         // Añadir los datos a DataTable
         dataTable.row.add([
-             
+             details,
+             inData.inspector,
+             inData.dni,
+             inData.numCardOperation,
+             inData.comment
+
         ]);
 
         dataExcel.push({
@@ -98,6 +107,9 @@ function obtenerHoraMinutoDesdeTimestamp(timestamp) {
     return `${horas}:${minutos}`; // Devuelve la hora en formato HH:mm
 }
 
+function showDetails(data){
+
+}
 
 function exportToExcel(){
 

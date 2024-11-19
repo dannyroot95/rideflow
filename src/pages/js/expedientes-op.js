@@ -86,6 +86,7 @@ function showDetails(button) {
     // Recupera el objeto user desde el atributo data-user del botón
     const fileData = JSON.parse(button.getAttribute('data-user'));
     $('#details').modal('show')
+
     document.getElementById("d-dni").value = fileData.dni
     document.getElementById("d-name").value = fileData.name
     document.getElementById("d-email").value = fileData.email
@@ -146,8 +147,6 @@ function showDetails(button) {
         document.getElementById("d-color").disabled = true
         document.getElementById("d-codeVest").disabled = true
 
-
-
         document.getElementById("d-addOn-observed").style = "display:none;"
         document.getElementById("d-btnCorrect").style = "display:none;"
         document.getElementById("d-btnCorrect").innerHTML = ``
@@ -193,7 +192,6 @@ function showDetails(button) {
         document.getElementById("d-txtObserved").disabled = true
     
         document.getElementById("d-div-content-certificated").innerHTML = ``
-
    
     }
 }

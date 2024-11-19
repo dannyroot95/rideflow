@@ -80,6 +80,9 @@ usersCollection.where("typeUser", "not-in", ["association", "superAdmin"]).onSna
             case "operator":
                 typeUserText = "Operador";
                 break;
+            case "inspector":
+                typeUserText = "Inspector";
+                break;
             default:
                 typeUserText = "Ciudadano";
         }

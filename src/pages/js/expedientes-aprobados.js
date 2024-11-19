@@ -200,7 +200,9 @@ async function generate(file) {
             nameGeneratedBy : user.name+' '+user.lastName,
             nameAssociation : fileData.nameAssociation,
             nameInCharge : boss,
-            signatureUrl : signatureUrl
+            signatureUrl : signatureUrl,
+            status : "ok",
+            isObserved : ""
         });
         
         // Actualiza el documento recién creado con su propio ID

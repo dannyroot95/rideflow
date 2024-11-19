@@ -206,6 +206,8 @@ function showDetails(button,idFolder) {
 
     document.getElementById("linkDownloadDNI").href = fileData.fileUrlDNI
 
+    document.getElementById("linkDownloadSUNARP").href = fileData.fileURLSunarp
+
     document.getElementById("timesObserved").innerHTML = fileData.timesObserved
     document.getElementById("status").innerHTML = getStatus(fileData.status)
 

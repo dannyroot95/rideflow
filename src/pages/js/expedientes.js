@@ -56,7 +56,7 @@ usersCollection.where("association", "==", user.ruc).onSnapshot((snapshot) => {
         style="background-color:#093e00;color:white;" data-user='${JSON.stringify(fileData)}' 
         onclick="showDetails(this)">Ver</button></center>`;
         
-        if(fileData.status == "registered"){
+        if(fileData.status == "registered" || fileData.status == "denied"){
             details = `<center><button class="btn btn-light" 
             style="background-color:#093e00;color:white;" data-user='${JSON.stringify(fileData)}' 
             onclick="showDetails(this)">Ver</button>&nbsp;&nbsp;<button onclick="deleteFile('${fileData.id}')" class="btn btn-danger">Eliminar</button></center>`;
@@ -112,13 +112,20 @@ usersCollection.where("association", "==", user.ruc).onSnapshot((snapshot) => {
 document.getElementById("createFileForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Obtener los valores del formulario
+    // personal
     const email = document.getElementById("email").value;
     const name = document.getElementById("name").value;
     const dni = document.getElementById("dni").value;
     const phone = document.getElementById("phone").value;
     const dniFile = document.getElementById("dniFile").files[0];
-    const sunarpFile = document.getElementById("sunarpFile").files[0];
+    const soat = document.getElementById("soat").value
+    const dateValiditySoat = document.getElementById("vig-soat").value
+    const fileSOAT = document.getElementById("soatFile").files[0];
+    const licence = document.getElementById("licence").value
+    const dateValidityLicence = document.getElementById("vig-licence").value
+    const fileLicence = document.getElementById("licenceFile").files[0];
+    const photo = document.getElementById("file-input-photo").files[0];
+    //vehicle
     const brand = document.getElementById("brand").value;
     const model = document.getElementById("model").value;
     const plate = document.getElementById("plate").value;
@@ -128,6 +135,9 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
     const color = document.getElementById("color").value;
     const codeVest = document.getElementById("codeVest").value;
     const category = document.getElementById("category").value;
+    const sunarpFile = document.getElementById("sunarpFile").files[0];
+    const dateValidityInspection = document.getElementById("vig-inspection").value;
+    const fileInspection = document.getElementById("inspectionFile").files[0];
 
     try {
         disable();
@@ -139,13 +149,23 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
 
         if (!dniExists.empty) {
             // Si el DNI ya existe, muestra un mensaje de error y no continúes
-            Swal.fire({
-                title: "Error",
-                text: "El DNI ya está registrado.",
-                icon: "error"
-            });
-            enable();
-            return; // Salir del evento submit
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 5000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                  toast.onmouseenter = Swal.stopTimer;
+                  toast.onmouseleave = Swal.resumeTimer;
+                }
+              });
+              Toast.fire({
+                icon: "warning",
+                title: "El asociado ya tiene registrado un expediente!"
+              });
+            //enable();
+            //return; 
         }
 
         
@@ -160,6 +180,22 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
         const fileRef2 = storageRef.child('associations/'+user.ruc+"/files/sunarp/"+dni+"/"+ sunarpFile.name);
         await fileRef2.put(sunarpFile);
         const fileURLSunarp = await fileRef2.getDownloadURL();
+
+        const fileRef3 = storageRef.child('associations/'+user.ruc+"/files/licence/"+licence+"/"+ fileLicence.name);
+        await fileRef3.put(fileLicence);
+        const fileURLLicence = await fileRef3.getDownloadURL();
+
+        const fileRef4 = storageRef.child('associations/'+user.ruc+"/files/soat/"+soat+"/"+ fileSOAT.name);
+        await fileRef4.put(fileSOAT);
+        const fileURLSOAT = await fileRef4.getDownloadURL();
+
+        const fileRef5 = storageRef.child('associations/'+user.ruc+"/files/inspection/"+dni+"/"+ fileInspection.name);
+        await fileRef5.put(fileInspection);
+        const fileURLInspection = await fileRef5.getDownloadURL();
+
+        const fileRef6 = storageRef.child('associations/'+user.ruc+"/files/photo/"+dni+"/"+ photo.name);
+        await fileRef6.put(photo);
+        const fileURLPhoto = await fileRef6.getDownloadURL();
 
         const randomNumber = Math.floor(Math.random() * 10000).toString() + dni;
 
@@ -191,7 +227,17 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
             color:color,
             codeVest:codeVest,
             category:category,
-            nameAssociation : user.association
+            nameAssociation : user.association,
+            licence:licence,
+            fileURLLicence : fileURLLicence,
+            dateValidityLicence : dateValidityLicence,
+            soat:soat,
+            dateValiditySoat : dateValiditySoat,
+            fileURLSOAT : fileURLSOAT,
+            dateValidityInspection:dateValidityInspection,
+            fileURLInspection : fileURLInspection,
+            photo : fileURLPhoto 
+
 
         });
 
@@ -359,15 +405,36 @@ document.getElementById('migrateExpedientes').addEventListener('click', async ()
 
 
 
+document.getElementById('file-input-photo').addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.getElementById('preview');
+          preview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+ });
+  
+
+
+
 function showDetails(button) {
     // Recupera el objeto user desde el atributo data-user del botón
     const fileData = JSON.parse(button.getAttribute('data-user'));
     $('#details').modal('show')
+    document.getElementById("d-preview").src = fileData.photo
     document.getElementById("d-dni").value = fileData.dni
     document.getElementById("d-name").value = fileData.name
     document.getElementById("d-email").value = fileData.email
     document.getElementById("d-phone").value = fileData.phone
 
+    document.getElementById("d-licence").value = fileData.licence
+    document.getElementById("d-vig-licence").value = fileData.dateValidityLicence
+    document.getElementById("d-soat").value = fileData.soat
+    document.getElementById("d-vig-soat").value = fileData.dateValiditySoat
+    
     document.getElementById("d-brand").value = fileData.brand
     document.getElementById("d-model").value = fileData.model
     document.getElementById("d-plate").value = fileData.plate
@@ -378,12 +445,14 @@ function showDetails(button) {
     document.getElementById("d-color").value = fileData.color
     document.getElementById("d-codeVest").value = fileData.codeVest
 
+    document.getElementById("d-vig-inspection").value = fileData.dateValidityInspection
+
     document.getElementById("d-sunarpObs").style.display = "none"
 
 
     document.getElementById("d-status").innerHTML = getStatusFromDetails(fileData.status)
 
-    if(fileData.status == "registered" || fileData.status == "migrated" || fileData.status == "corrected" || fileData.status == "acepted"){
+    if(fileData.status == "registered" || fileData.status == "migrated" || fileData.status == "corrected" || fileData.status == "acepted" || fileData.status == "denied"){
         //addOn-observed btnCorect
         document.getElementById("d-dni").disabled = true
         document.getElementById("d-dni-addon-file").style.display = "none"
@@ -503,6 +572,9 @@ function getStatusFromDetails(status){
     }else if(status == "aproved"){
         document.getElementById("d-status").style = "color:#fff;background-color: #00356d;"
         status = `<b>Aprobado</b>`
+    }else if(status == "denied"){
+        document.getElementById("d-status").style = "color:#fff;background-color: #fc0000;"
+        status = `<b>Denegado</b>`
     }
     return status
 }
@@ -539,6 +611,7 @@ function disable(){
 var modalAddUser = document.getElementById('fileModal');
 modalAddUser.addEventListener('hidden.bs.modal', function (event) {
     document.getElementById("createFileForm").reset();
+    document.getElementById("preview").src = "/images/carnetDefault.JPG"
 });
 
 function isLetter(event) {
@@ -570,6 +643,8 @@ function getStatus(status){
         status = `<b style="color:#900C3F;">Aceptado</b>`
     }else if(status == "aproved"){
         status = `<b style="color:#00356d;">Aprobado</b>`
+    }else if(status == "denied"){
+        status = `<b style="color:#fc0000;">Denegado</b>`
     }
     return status
 }

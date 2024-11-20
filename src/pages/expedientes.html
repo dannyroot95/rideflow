@@ -49,6 +49,17 @@
         font-size: 1em;
     }
 
+    #preview {
+        width: 105px; /* Ancho para tamaño foto carnet escalado */
+        height: 135px; /* Altura para tamaño foto carnet escalado */
+        border: 1px solid #ccc; /* Borde gris */
+        display: block; /* Se muestra siempre, incluso sin imagen */
+    }
+
+    .swal2-toast .swal2-title {
+        color: black !important;
+    }
+
     </style>
   
 </head>
@@ -80,7 +91,7 @@
     </div>
 
     <div class="modal fade" id="fileModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="userModalLabel">Complete los campos para crear un expediente</h5>
@@ -89,12 +100,28 @@
                 <div class="modal-body">
                     <form id="createFileForm">
                         <!-- DNI -->
-                        <label style="color: #024397;font-weight: bold;">Datos personales</label>
+                        <label style="color: #024397;font-weight: bold;font-size: 18px;">Datos personales</label>
                         <p></p>
+
+
+                        <div class="modal-body d-flex flex-column align-items-center">
+                            <!-- Área de previsualización de la imagen -->
+                            <img id="preview" src="/images/carnetDefault.JPG" alt="Previsualización" style="width: 105px; height: 135px; border: 1px solid #ccc; display: block;" />
+                            <!-- Botón para cargar la imagen -->
+                             <p></p>
+                            <div class="mb-3 input-group" style="width: 500px;">
+                                <span class="input-group-text">Subir foto</span>
+                                <input required style="background-color: #008020;color: white;" type="file" class="form-control" id="file-input-photo" accept="image/*"/>
+                            </div>
+                   
+                        </div>
+
+                        <!---->
+
                         <div class="mb-3 input-group">
                             <span class="input-group-text" id="dni-addon">DNI</span>
                             <input maxlength="8" placeholder="Ingrese el DNI" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="dni" required>
-                            <span class="input-group-text" style="font-weight: 600;font-size: 12px;color: #014c69;" id="dni-addon">Sube tu DNI escaneado (ambas caras)</span>
+                            <span class="input-group-text" style="font-weight: 600;font-size: 12px;color: #014c69;" id="dni-addon">Sube el DNI escaneado (ambas caras)</span>
                             <input type="file" class="form-control" id="dniFile" required>
                         </div>
     
@@ -116,8 +143,26 @@
                             <span class="input-group-text" id="phone-addon">Teléfono</span>
                             <input placeholder="Ingrese el teléfono ó celular" maxlength="9" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="phone" required>
                         </div>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Licencia de conducir</span>
+                            <input placeholder="Ingrese el Nro de licencia" type="text" class="form-control" id="licence" required>
+                            <span class="input-group-text" style="font-weight: 600;font-size: 11px;">Vigencia</span>
+                            <input placeholder="Vigencia" type="date" class="form-control" id="vig-licence" required>
+                            <span class="input-group-text" style="font-weight: 600;font-size: 12px;color: #6200d3;" id="dni-addon">Sube la Licencia (escaneado)</span>
+                            <input type="file" class="form-control" id="licenceFile" required>
+                        </div>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">SOAT</span>
+                            <input placeholder="Ingrese el Nro de SOAT" type="text" class="form-control" id="soat" required>
+                            <span class="input-group-text" style="font-weight: 600;font-size: 11px;">Vigencia</span>
+                            <input placeholder="Vigencia" type="date" class="form-control" id="vig-soat" required>
+                            <span class="input-group-text" style="font-weight: 600;font-size: 12px;color: #d3007b;" id="dni-addon">Sube el SOAT (escaneado)</span>
+                            <input type="file" class="form-control" id="soatFile" required>
+                        </div>
     
-                        <label style="color: #44003e;font-weight: bold;">Datos del vehículo</label>
+                        <label style="color: #44003e;font-weight: bold;font-size: 18px;">Datos del vehículo</label>
                         <p></p>
 
                         <div class="mb-3 input-group">
@@ -160,9 +205,26 @@
                         </div>
 
                         <div class="mb-3 input-group">
+                            <span class="input-group-text">Fecha de Inspeccion vehicular</span>
+                            <input placeholder="Vigencia" type="date" class="form-control" id="vig-inspection" required>
+                            <span class="input-group-text" style="font-weight: 600;font-size: 12px;color: #d3a200;background-color: #000000;">Sube el certificado de Inspeccion</span>
+                            <input type="file" class="form-control" id="inspectionFile" required>
+                        </div>
+
+                        <div class="mb-3 input-group">
                             <img src="/images/sunarp.JPG" width="75px" height="40px">
-                            <span style="background-color: #005a61;color: white;" class="input-group-text" id="dni-addon">Archivo de consulta vehicular (SUNARP)</span>
+                            <span style="background-color: #005a61;color: white;" class="input-group-text">Archivo de consulta vehicular (SUNARP)</span>
                             <input type="file" class="form-control" id="sunarpFile" required>
+                        </div>
+
+                        <i class="bi bi-check2-square"></i>&nbsp;<label style="color: #611300;font-weight: bold;font-size: 18px;">Politicas de privacidad y términos de condiciones</label>
+                        <p></p>
+
+                        <div class="mb-3 input-group">
+                            <a target="_blank" style="text-decoration: none;" href="https://firebasestorage.googleapis.com/v0/b/rideflow-142ee.appspot.com/o/terms%2FT%C3%89RMINOS%20Y%20CONDICIONES%20DE%20USO.pdf?alt=media&token=0296b3e3-a0bb-456a-9e06-effac8543938">
+                                <span style="background-color: #611300;color: white;" class="input-group-text"><i class="bi bi-download"></i>&nbsp;Descargar formato</span>
+                            </a>
+                            <input type="file" class="form-control" id="termsFile" required>
                         </div>
     
                         <!-- Botón de Crear -->
@@ -187,6 +249,12 @@
                    
                         <label style="color: #024397;font-weight: bold;">Datos personales</label>
                         <p></p>
+
+                        <div class="modal-body d-flex flex-column align-items-center">
+                            <!-- Área de previsualización de la imagen -->
+                            <img id="d-preview" src="/images/carnetDefault.JPG" alt="Previsualización" style="width: 105px; height: 135px; border: 1px solid #ccc; display: block;" />
+                        </div>
+
                         <!-- DNI -->
                         <div class="mb-3 input-group">
                             <span class="input-group-text" id="d-dni-addon">DNI</span>
@@ -211,9 +279,26 @@
                         <!-- Teléfono -->
                         <div class="mb-3 input-group">
                             <span class="input-group-text" id="d-phone-addon">Teléfono</span>
-                            <input disabled placeholder="Ingrese el teléfono ó celular" maxlength="9" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="d-phone" required>
+                            <input disabled maxlength="9" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="d-phone" required>
                         </div>
 
+                        <!-- Licencia -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Licencia de conducir</span>
+                            <input disabled  type="text" class="form-control" id="d-licence" required>
+                            <span class="input-group-text">Vigencia</span>
+                            <input disabled type="date" class="form-control" id="d-vig-licence" required>
+                        </div>
+
+                        <!-- soat -->
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">SOAT</span>
+                            <input disabled type="text" class="form-control" id="d-soat" required>
+                            <span class="input-group-text">Vigencia</span>
+                            <input disabled type="date" class="form-control" id="d-vig-soat" required>
+                        </div>
+
+                  
                         <label style="color: #44003e;font-weight: bold;">Datos del vehículo</label>
                         <p></p>
 
@@ -255,6 +340,13 @@
                             <span class="input-group-text">Código de chaleco</span>
                             <input type="text" style="text-transform: uppercase;" class="form-control" id="d-codeVest" placeholder="Ejem : CD-123">
                         </div>
+
+            
+                      <div class="mb-3 input-group">
+                            <span class="input-group-text">Fecha de emisión de certificado de inspeccion vehicular</span>
+                            <input disabled type="date" class="form-control" id="d-vig-inspection" required>
+                      </div>
+    
     
                         <div class="mb-3 input-group" id="d-sunarpObs">
                             <img src="/images/sunarp.JPG" width="75px" height="40px">

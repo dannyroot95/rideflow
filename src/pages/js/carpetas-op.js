@@ -186,13 +186,21 @@ function showDetails(button,idFolder) {
     // Recupera el objeto user desde el atributo data-user del botón
     const fileData = JSON.parse(button.getAttribute('data-user'));
     $('#details').modal('show')
+    document.getElementById("preview").src = fileData.photo
     document.getElementById("inputGroupSelectOperation").disabled = false
     document.getElementById("inputGroupSelectOperation").selectedIndex = 0;
     document.getElementById("txtObserved").value = ""
     document.getElementById("dni").value = fileData.dni
+    document.getElementById("linkDownloadDNI").href = fileData.fileUrlDNI
     document.getElementById("name").value = fileData.name
     document.getElementById("email").value = fileData.email
     document.getElementById("phone").value = fileData.phone
+    document.getElementById("licence").value = fileData.licence
+    document.getElementById("vig-licence").value = fileData.dateValidityLicence
+    document.getElementById("linkUrlLicence").href = fileData.fileURLLicence
+    document.getElementById("soat").value = fileData.soat
+    document.getElementById("vig-soat").value = fileData.dateValiditySoat
+    document.getElementById("linkUrlSoat").href = fileData.fileURLSOAT
 
     document.getElementById("brand").value = fileData.brand
     document.getElementById("model").value = fileData.model
@@ -204,7 +212,10 @@ function showDetails(button,idFolder) {
     document.getElementById("color").value = fileData.color
     document.getElementById("codeVest").value = fileData.codeVest
 
-    document.getElementById("linkDownloadDNI").href = fileData.fileUrlDNI
+    document.getElementById("vig-inspection").value = fileData.dateValidityInspection
+    document.getElementById("linkUrlInspection").href = fileData.fileURLInspection
+   
+    document.getElementById("linkUrlTerms").href = fileData.fileURLTerms
 
     document.getElementById("linkDownloadSUNARP").href = fileData.fileURLSunarp
 

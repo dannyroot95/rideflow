@@ -87,10 +87,19 @@ function showDetails(button) {
     const fileData = JSON.parse(button.getAttribute('data-user'));
     $('#details').modal('show')
 
+    document.getElementById("d-preview").src = fileData.photo
     document.getElementById("d-dni").value = fileData.dni
+    document.getElementById("urlLinkDni").href = fileData.fileUrlDNI
     document.getElementById("d-name").value = fileData.name
     document.getElementById("d-email").value = fileData.email
     document.getElementById("d-phone").value = fileData.phone
+
+    document.getElementById("d-licence").value = fileData.licence
+    document.getElementById("d-vig-licence").value = fileData.dateValidityLicence
+    document.getElementById("linkUrlLicence").href = fileData.fileURLLicence
+    document.getElementById("d-soat").value = fileData.soat
+    document.getElementById("d-vig-soat").value = fileData.dateValiditySoat
+    document.getElementById("linkUrlSoat").href = fileData.fileURLSOAT
 
     document.getElementById("d-brand").value = fileData.brand
     document.getElementById("d-model").value = fileData.model
@@ -101,6 +110,13 @@ function showDetails(button) {
     document.getElementById("d-numEngine").value = fileData.numEngine
     document.getElementById("d-color").value = fileData.color
     document.getElementById("d-codeVest").value = fileData.codeVest
+
+    document.getElementById("d-vig-inspection").value = fileData.dateValidityInspection
+    document.getElementById("linkUrlInspection").href = fileData.fileURLInspection
+   
+    document.getElementById("linkUrlTerms").href = fileData.fileURLTerms
+
+    document.getElementById("linkDownloadSUNARP").href = fileData.fileURLSunarp
 
     document.getElementById("d-status").innerHTML = getStatusFromDetails(fileData.status)
 
@@ -169,22 +185,19 @@ function showDetails(button) {
                                 `
     }else if(fileData.status == "observed"){
 
-        document.getElementById("d-dni").disabled = false
-        document.getElementById("d-dni-addon-file").style = "display : flex;font-weight: 600;font-size: 12px;color: #014c69;"
-        document.getElementById("d-dniFile").style.display = "flex"
-        document.getElementById("d-dniFile").disabled = false
-        document.getElementById("d-email").disabled = false
-        document.getElementById("d-phone").disabled = false
+        document.getElementById("d-dni").disabled = true
+        document.getElementById("d-email").disabled = true
+        document.getElementById("d-phone").disabled = true
 
-        document.getElementById("d-brand").disabled = false
-        document.getElementById("d-model").disabled = false
-        document.getElementById("d-plate").disabled = false
-        document.getElementById("d-yearBuild").disabled = false
-        document.getElementById("d-category").disabled = false
-        document.getElementById("d-numSerieVehicle").disabled = false
-        document.getElementById("d-numEngine").disabled = false
-        document.getElementById("d-color").disabled = false
-        document.getElementById("d-codeVest").disabled = false
+        document.getElementById("d-brand").disabled = true
+        document.getElementById("d-model").disabled = true
+        document.getElementById("d-plate").disabled = true
+        document.getElementById("d-yearBuild").disabled = true
+        document.getElementById("d-category").disabled = true
+        document.getElementById("d-numSerieVehicle").disabled = true
+        document.getElementById("d-numEngine").disabled = true
+        document.getElementById("d-color").disabled = true
+        document.getElementById("d-codeVest").disabled = true
 
         document.getElementById("d-addOn-observed").style = "display:flex;width:100%"
         document.getElementById("d-btnCorrect").style = "display:flex;width:100%"
@@ -198,22 +211,22 @@ function showDetails(button) {
 
 function getStatusFromDetails(status){
     if(status == "registered"){
-        document.getElementById("d-status").style = "color:#fff;background-color: #048e34;"
+        document.getElementById("d-status").style = "color:#048e34;margin-top:8px;"
         status = `<b>Registrado</b>`
     }else if(status == "migrated"){
-        document.getElementById("d-status").style = "color:#fff;background-color: #b49600;"
+        document.getElementById("d-status").style = "color:#b49600;margin-top:8px;"
         status = `<b>Migrado</b>`
     }else if(status == "observed"){
-        document.getElementById("d-status").style = "color:#fff;background-color: #fc0000;"
+        document.getElementById("d-status").style = "color:#fc0000;margin-top:8px;"
         status = `<b>Observado</b>`
     }else if(status == "corrected"){
-        document.getElementById("d-status").style = "color:#fff;background-color: #009083;"
+        document.getElementById("d-status").style = "color:#009083;margin-top:8px;"
         status = `<b>Corregido</b>`
     }else if(status == "acepted"){
-        document.getElementById("d-status").style = "color:#fff;background-color: #900C3F;"
+        document.getElementById("d-status").style = "color:#900C3F;margin-top:8px;"
         status = `<b>Aceptado</b>`
     }else if(status == "aproved"){
-        document.getElementById("d-status").style = "color:#fff;background-color: #00356d;"
+        document.getElementById("d-status").style = "color:#00356d;margin-top:8px;"
         status = `<b>Aprobado</b>`
     }
     return status
@@ -270,6 +283,8 @@ function getStatus(status){
         status = `<b style="color:#900C3F;">Aceptado</b>`
     }else if(status == "aproved"){
         status = `<b style="color:#00356d;">Aprobado</b>`
+    }else if(status == "denied"){
+        status = `<b style="color:#fc0000;">Denegado</b>`
     }
     return status
 }

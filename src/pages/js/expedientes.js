@@ -138,6 +138,7 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
     const sunarpFile = document.getElementById("sunarpFile").files[0];
     const dateValidityInspection = document.getElementById("vig-inspection").value;
     const fileInspection = document.getElementById("inspectionFile").files[0];
+    const fileTerms = document.getElementById("termsFile").files[0];
 
     try {
         disable();
@@ -197,6 +198,10 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
         await fileRef6.put(photo);
         const fileURLPhoto = await fileRef6.getDownloadURL();
 
+        const fileRef7 = storageRef.child('associations/'+user.ruc+"/files/terms/"+dni+"/"+ fileTerms.name);
+        await fileRef7.put(fileTerms);
+        const fileURLTerms = await fileRef7.getDownloadURL();
+
         const randomNumber = Math.floor(Math.random() * 10000).toString() + dni;
 
         // Crear un nuevo documento en Firestore con un ID automático
@@ -236,6 +241,7 @@ document.getElementById("createFileForm").addEventListener("submit", async (e) =
             fileURLSOAT : fileURLSOAT,
             dateValidityInspection:dateValidityInspection,
             fileURLInspection : fileURLInspection,
+            fileURLTerms : fileURLTerms,
             photo : fileURLPhoto 
 
 
@@ -426,6 +432,8 @@ function showDetails(button) {
     $('#details').modal('show')
     document.getElementById("d-preview").src = fileData.photo
     document.getElementById("d-dni").value = fileData.dni
+    document.getElementById("urlLinkDni").href = fileData.fileUrlDNI
+    
     document.getElementById("d-name").value = fileData.name
     document.getElementById("d-email").value = fileData.email
     document.getElementById("d-phone").value = fileData.phone
@@ -461,6 +469,11 @@ function showDetails(button) {
         document.getElementById("d-email").disabled = true
         document.getElementById("d-phone").disabled = true
 
+        document.getElementById("d-licence").disabled = true
+        document.getElementById("d-vig-licence").disabled = true
+        document.getElementById("d-soat").disabled = true
+        document.getElementById("d-vig-soat").disabled = true
+
         document.getElementById("d-brand").disabled = true
         document.getElementById("d-model").disabled = true
         document.getElementById("d-plate").disabled = true
@@ -471,6 +484,7 @@ function showDetails(button) {
         document.getElementById("d-color").disabled = true
         document.getElementById("d-codeVest").disabled = true
 
+        document.getElementById("d-vig-inspection").disabled = true
 
         document.getElementById("d-addOn-observed").style = "display:none;"
         document.getElementById("d-btnCorrect").style = "display:none;"
@@ -526,6 +540,11 @@ function showDetails(button) {
         document.getElementById("d-dniFile").disabled = false
         document.getElementById("d-email").disabled = false
         document.getElementById("d-phone").disabled = false
+
+        document.getElementById("d-licence").value = fileData.licence
+        document.getElementById("d-vig-licence").value = fileData.dateValidityLicence
+        document.getElementById("d-soat").value = fileData.soat
+        document.getElementById("d-vig-soat").value = fileData.dateValiditySoat
 
         document.getElementById("d-brand").disabled = false
         document.getElementById("d-model").disabled = false

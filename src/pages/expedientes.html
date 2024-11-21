@@ -239,7 +239,7 @@
     </div>
 
     <div class="modal fade" id="details" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="userModalLabel">Detalle de expediente</h5>
@@ -261,6 +261,9 @@
                             <input disabled maxlength="8" placeholder="Ingrese el DNI" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="d-dni" required>
                             <span style="display: none;" class="input-group-text" style="font-weight: 600;font-size: 12px;color: #014c69;" id="d-dni-addon-file">Sube tu DNI escaneado (ambas caras)</span>
                             <input type="file" class="form-control" id="d-dniFile" required disabled style="display: none;">
+                            <a id="urlLinkDni">
+                                <span class="input-group-text" style="height: 100%;background-color: #014c69;color: white;"><i class="bi bi-download"></i></span>
+                            </a>
                         </div>
     
                         <!-- Nombres -->
@@ -273,29 +276,39 @@
                         <!-- Correo Electrónico -->
                         <div class="mb-3 input-group">
                             <span class="input-group-text" id="d-email-addon">Correo</span>
-                            <input disabled type="email" style="text-transform: lowercase;" class="form-control" id="d-email" placeholder="Ingresa el correo" aria-label="Correo" aria-describedby="email-addon" required>
+                            <input type="email" style="text-transform: lowercase;" class="form-control" id="d-email" placeholder="Ingresa el correo" aria-label="Correo" aria-describedby="email-addon" required>
                         </div>
     
                         <!-- Teléfono -->
                         <div class="mb-3 input-group">
                             <span class="input-group-text" id="d-phone-addon">Teléfono</span>
-                            <input disabled maxlength="9" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="d-phone" required>
+                            <input maxlength="9" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="d-phone" required>
                         </div>
 
                         <!-- Licencia -->
                         <div class="mb-3 input-group">
                             <span class="input-group-text">Licencia de conducir</span>
-                            <input disabled  type="text" class="form-control" id="d-licence" required>
+                            <input type="text" class="form-control" id="d-licence">
                             <span class="input-group-text">Vigencia</span>
-                            <input disabled type="date" class="form-control" id="d-vig-licence" required>
+                            <input type="date" class="form-control" id="d-vig-licence">
+                            <span class="input-group-text" style="font-weight: 600;font-size: 12px;color: #6200d3;" id="dni-addon">Sube la Licencia (escaneado)</span>
+                            <input type="file" class="form-control" id="d-licenceFile" required>
+                            <a id="urlLinkLicence">
+                                <span class="input-group-text" style="height: 100%;background-color: #695101;color: white;"><i class="bi bi-download"></i></span>
+                            </a>
                         </div>
 
                         <!-- soat -->
                         <div class="mb-3 input-group">
                             <span class="input-group-text">SOAT</span>
-                            <input disabled type="text" class="form-control" id="d-soat" required>
+                            <input type="text" class="form-control" id="d-soat">
                             <span class="input-group-text">Vigencia</span>
-                            <input disabled type="date" class="form-control" id="d-vig-soat" required>
+                            <input type="date" class="form-control" id="d-vig-soat">
+                            <span class="input-group-text" style="font-weight: 600;font-size: 12px;color: #d3007b;" id="dni-addon">Sube el SOAT (escaneado)</span>
+                            <input type="file" class="form-control" id="d-soatFile" required>
+                            <a id="urlLinkSoat">
+                                <span class="input-group-text" style="height: 100%;background-color: #01692c;color: white;"><i class="bi bi-download"></i></span>
+                            </a>
                         </div>
 
                   
@@ -342,16 +355,33 @@
                         </div>
 
             
-                      <div class="mb-3 input-group">
-                            <span class="input-group-text">Fecha de emisión de certificado de inspeccion vehicular</span>
-                            <input disabled type="date" class="form-control" id="d-vig-inspection" required>
-                      </div>
-    
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Fecha de Inspeccion vehicular</span>
+                            <input placeholder="Vigencia" type="date" class="form-control" id="d-vig-inspection">
+                            <span class="input-group-text" style="font-weight: 600;font-size: 12px;color: #d3a200;background-color: #000000;">Sube el certificado de Inspeccion</span>
+                            <input type="file" class="form-control" id="d-inspectionFile">
+                            <a id="urlLinkInspection">
+                                <span class="input-group-text" style="height: 100%;background-color: #690129;color: white;"><i class="bi bi-download"></i></span>
+                            </a>
+                        </div>
+
+                        <div class="mb-3 input-group">
+                            <a target="_blank" style="text-decoration: none;" href="https://firebasestorage.googleapis.com/v0/b/rideflow-142ee.appspot.com/o/terms%2FT%C3%89RMINOS%20Y%20CONDICIONES%20DE%20USO.pdf?alt=media&token=0296b3e3-a0bb-456a-9e06-effac8543938">
+                                <span style="background-color: #611300;color: white;" class="input-group-text"><i class="bi bi-download"></i>&nbsp;Terminos y condiciones</span>
+                            </a>
+                            <input type="file" class="form-control" id="d-termsFile" required>
+                            <a id="urlLinkTerms">
+                                <span class="input-group-text" style="height: 100%;background-color: #012e69;color: white;"><i class="bi bi-download"></i></span>
+                            </a>
+                        </div>
     
                         <div class="mb-3 input-group" id="d-sunarpObs">
                             <img src="/images/sunarp.JPG" width="75px" height="40px">
                             <span style="background-color: #005a61;color: white;" class="input-group-text" id="dni-addon">Archivo de consulta vehicular (SUNARP)</span>
-                            <input type="file" class="form-control" id="d-sunarpFile" required>
+                            <input type="file" class="form-control" id="d-sunarpFile">
+                            <a id="urlLinkSunarp">
+                                <span class="input-group-text" style="height: 100%;background-color: #290169;color: white;"><i class="bi bi-download"></i></span>
+                            </a>
                         </div>
     
                         <div class="mb-3 input-group" id="d-div-content-certificated">

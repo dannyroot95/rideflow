@@ -65,6 +65,13 @@
   background-color: #1a570f29;
   box-shadow: inset 0 calc(-1* var(--bs-accordion-border-width)) 0 #087402;
 }
+#preview {
+        width: 105px; /* Ancho para tamaño foto carnet escalado */
+        height: 135px; /* Altura para tamaño foto carnet escalado */
+        border: 1px solid #ccc; /* Borde gris */
+        display: block; /* Se muestra siempre, incluso sin imagen */
+    }
+
     </style>
 
 </head>
@@ -90,17 +97,24 @@
     </div>
 
     <div class="modal fade" id="details" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="userModalLabel">Detalle de expediente</h5>
-                    <label style="margin-left: 30%;">Veces observado :&nbsp;<label id="timesObserved"></label></label>&nbsp;&nbsp;<label>|</label>&nbsp;&nbsp;<label>Estado : &nbsp;<label id="status"></label></label>
+                    <label style="margin-left: 50%;">Veces observado :&nbsp;<b style="color: red;"><label id="timesObserved"></label></b></label>&nbsp;&nbsp;<label>|</label>&nbsp;&nbsp;<label>Estado : &nbsp;<label id="status"></label></label>
                     <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
 
                         <label style="color: #024397;font-weight: bold;">Datos personales</label>
                         <p></p>
+
+                        <div class="modal-body d-flex flex-column align-items-center">
+                            <!-- Área de previsualización de la imagen -->
+                            <img id="preview" src="/images/carnetDefault.JPG" alt="Previsualización" style="width: 105px; height: 135px; border: 1px solid #ccc; display: block;" />
+                             <p></p>
+                        </div>
+
                         <!-- DNI -->
                         <div class="mb-3 input-group">
                             <span class="input-group-text" id="dni-addon">DNI</span>
@@ -111,7 +125,7 @@
                                     <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
                                   </svg>
                                 &nbsp;  
-                                <a id="linkDownloadDNI" style="color: #ffffff;text-decoration: none;" href="www.google.com" target="_blank">Descargar DNI</a></span>
+                                <a id="linkDownloadDNI" style="color: #ffffff;text-decoration: none;" href="www.google.com" target="_blank">Descargar</a></span>
                         </div>
     
                         <!-- Nombres -->
@@ -131,6 +145,26 @@
                         <div class="mb-3 input-group">
                             <span class="input-group-text" id="phone-addon">Teléfono</span>
                             <input disabled placeholder="Ingrese el teléfono ó celular" maxlength="9" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="phone" required>
+                        </div>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Licencia de conducir</span>
+                            <input disabled style="color: #000;" type="text" class="form-control" id="licence" required>
+                            <span class="input-group-text" style="font-weight: 600;font-size: 11px;">Vigencia</span>
+                            <input disabled style="color: #000;" placeholder="Vigencia" type="date" class="form-control" id="vig-licence" required>
+                            <a id="linkUrlLicence" style="text-decoration: none;">
+                                <span class="input-group-text" style="font-weight: 600;background-color: #7400d3;color: white;"><i class="bi bi-download"></i>&nbsp;Descargar</span>
+                            </a>
+                        </div>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">SOAT</span>
+                            <input disabled style="color: #000;" type="text" class="form-control" id="soat" required>
+                            <span class="input-group-text" style="font-weight: 600;font-size: 11px;">Vigencia</span>
+                            <input disabled style="color: #000;" placeholder="Vigencia" type="date" class="form-control" id="vig-soat" required>
+                             <a id="linkUrlSoat" style="text-decoration: none;">
+                                <span class="input-group-text" style="font-weight: 600;background-color: #d3007b;color: white;"><i class="bi bi-download"></i>&nbsp;Descargar</span>
+                             </a>
                         </div>
 
                         <label style="color: #44003e;font-weight: bold;">Datos del vehículo</label>
@@ -174,9 +208,24 @@
                             <span class="input-group-text">Código de chaleco</span>
                             <input disabled type="text" style="text-transform: uppercase;" class="form-control" id="codeVest" placeholder="Ejem : CD-123" required>
                         </div>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Fecha de emision de certificado de inspeccion</span>
+                            <input disabled style="color: #000;" placeholder="Vigencia" type="date" class="form-control" id="vig-inspection" required>
+                             <a id="linkUrlInspection" style="text-decoration: none;">
+                                <span class="input-group-text" style="font-weight: 600;background-color: #d33c00;color: white;"><i class="bi bi-download"></i>&nbsp;Descargar</span>
+                             </a>
+                        </div>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Terminos y condiciones</span>
+                             <a id="linkUrlTerms" style="text-decoration: none;">
+                                <span class="input-group-text" style="font-weight: 600;background-color: #016e44;color: white;"><i class="bi bi-download"></i>&nbsp;Descargar</span>
+                             </a>
+                        </div>
     
                         <div class="mb-3 input-group">
-                            <a id="linkDownloadSUNARP" style="color: #000;text-decoration: none;margin-left: 27%;" href="www.google.com" target="_blank">
+                            <a id="linkDownloadSUNARP" style="color: #000;text-decoration: none;margin-left: 34%;" href="www.google.com" target="_blank">
                             <img src="/images/sunarp2.JPG" width="360px" height="60px"/>
                             </a>
                         </div>
@@ -192,7 +241,7 @@
                           </div>
 
                         <div class="mb-3 input-group" id="addOn-observed">
-                            <textarea style="text-transform: uppercase;" placeholder="Digite la observación..." class="form-control" id="txtObserved" rows="3"></textarea>
+                            <textarea style="text-transform: uppercase;color: red;font-weight: 500;" placeholder="Digite la observación..." class="form-control" id="txtObserved" rows="3"></textarea>
                         </div>
 
                         <div class="mb-3 input-group" id="div-content-certificated">                

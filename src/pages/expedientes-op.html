@@ -65,22 +65,30 @@
     </div>
 
     <div class="modal fade" id="details" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="userModalLabel">Detalle de expediente</h5>
+                    <h5 class="modal-title" id="userModalLabel">Detalle de expediente | Estado : </h5>&nbsp;<h5 id="d-status"></h5>
                     <button type="button" id="d-btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                    
                         <label style="color: #024397;font-weight: bold;">Datos personales</label>
                         <p></p>
+           
+                        <div class="modal-body d-flex flex-column align-items-center">
+                            <!-- Área de previsualización de la imagen -->
+                            <img id="d-preview" src="/images/carnetDefault.JPG" alt="Previsualización" style="width: 105px; height: 135px; border: 1px solid #ccc; display: block;" />
+                             <p></p>
+                        </div>
+
                         <!-- DNI -->
                         <div class="mb-3 input-group">
                             <span class="input-group-text" id="d-dni-addon">DNI</span>
                             <input disabled maxlength="8" placeholder="Ingrese el DNI" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="d-dni" required>
-                            <span style="display: none;" class="input-group-text" style="font-weight: 600;font-size: 12px;color: #014c69;" id="d-dni-addon-file">Sube tu DNI escaneado (ambas caras)</span>
-                            <input type="file" class="form-control" id="d-dniFile" required disabled style="display: none;">
+                            <a id="urlLinkDni">
+                                <span class="input-group-text" style="font-weight: 600;background-color: #014c69;color: white;"><i class="bi bi-download"></i>&nbsp;Descargar</span>
+                            </a>
                         </div>
     
                         <!-- Nombres -->
@@ -100,6 +108,26 @@
                         <div class="mb-3 input-group">
                             <span class="input-group-text" id="d-phone-addon">Teléfono</span>
                             <input disabled placeholder="Ingrese el teléfono ó celular" maxlength="9" type="tel" onKeypress='if(event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;' class="form-control" id="d-phone" required>
+                        </div>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Licencia de conducir</span>
+                            <input disabled style="color: #000;" type="text" class="form-control" id="d-licence">
+                            <span class="input-group-text" style="font-weight: 600;font-size: 11px;">Vigencia</span>
+                            <input disabled style="color: #000;" placeholder="Vigencia" type="date" class="form-control" id="d-vig-licence">
+                            <a id="linkUrlLicence" style="text-decoration: none;">
+                                <span class="input-group-text" style="font-weight: 600;background-color: #7400d3;color: white;"><i class="bi bi-download"></i>&nbsp;Descargar</span>
+                            </a>
+                        </div>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">SOAT</span>
+                            <input disabled style="color: #000;" type="text" class="form-control" id="d-soat">
+                            <span class="input-group-text" style="font-weight: 600;font-size: 11px;">Vigencia</span>
+                            <input disabled style="color: #000;" placeholder="Vigencia" type="date" class="form-control" id="d-vig-soat">
+                             <a id="linkUrlSoat" style="text-decoration: none;">
+                                <span class="input-group-text" style="font-weight: 600;background-color: #d3007b;color: white;"><i class="bi bi-download"></i>&nbsp;Descargar</span>
+                             </a>
                         </div>
 
                         <label style="color: #44003e;font-weight: bold;">Datos del vehículo</label>
@@ -143,20 +171,36 @@
                             <span class="input-group-text">Código de chaleco</span>
                             <input type="text" style="text-transform: uppercase;" class="form-control" id="d-codeVest" placeholder="Ejem : CD-123">
                         </div>
+
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Fecha de emision de certificado de inspeccion</span>
+                            <input disabled style="color: #000;" placeholder="Vigencia" type="date" class="form-control" id="d-vig-inspection">
+                             <a id="linkUrlInspection" style="text-decoration: none;">
+                                <span class="input-group-text" style="font-weight: 600;background-color: #d33c00;color: white;"><i class="bi bi-download"></i>&nbsp;Descargar</span>
+                             </a>
+                        </div>
+
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text">Terminos y condiciones</span>
+                             <a id="linkUrlTerms" style="text-decoration: none;">
+                                <span class="input-group-text" style="font-weight: 600;background-color: #016e44;color: white;"><i class="bi bi-download"></i>&nbsp;Descargar</span>
+                             </a>
+                        </div>
     
+                        <div class="mb-3 input-group">
+                            <a id="linkDownloadSUNARP" style="color: #000;text-decoration: none;margin-left: 32%;" href="www.google.com" target="_blank">
+                            <img src="/images/sunarp2.JPG" width="360px" height="60px"/>
+                            </a>
+                        </div>
     
                         <div class="mb-3 input-group" id="d-div-content-certificated">
                             
                         </div>
 
                         
-                        <div class="mb-3 input-group">
-                            <span class="input-group-text">Estado del expediente</span>
-                            <span class="input-group-text" id="d-status"></span>
-                        </div>
-
                         <div class="mb-3 input-group" id="d-addOn-observed">
-                            <textarea class="form-control" id="d-txtObserved" rows="3"></textarea>
+                            <textarea disabled style="text-transform: uppercase;color: red;font-weight: 600;" class="form-control" id="d-txtObserved" rows="3"></textarea>
                         </div>
 
     

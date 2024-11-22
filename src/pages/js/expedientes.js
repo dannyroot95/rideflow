@@ -426,96 +426,104 @@ document.getElementById('file-input-photo').addEventListener('change', function(
 
 
 
-function showDetails(button) {
-    // Recupera el objeto user desde el atributo data-user del botón
+ function showDetails(button) {
     const fileData = JSON.parse(button.getAttribute('data-user'));
-    $('#details').modal('show')
-    document.getElementById("d-preview").src = fileData.photo
-    document.getElementById("d-dni").value = fileData.dni
-    document.getElementById("urlLinkDni").href = fileData.fileUrlDNI
-    
-    document.getElementById("d-name").value = fileData.name
-    document.getElementById("d-email").value = fileData.email
-    document.getElementById("d-phone").value = fileData.phone
+    $('#details').modal('show');
+    setElementValues([
+        ["d-preview", 'src', fileData.photo],
+        ["d-dni", 'value', fileData.dni],
+        ["d-name", 'value', fileData.name],
+        ["d-email", 'value', fileData.email],
+        ["d-phone", 'value', fileData.phone],
+        ["d-licence", 'value', fileData.licence],
+        ["d-vig-licence", 'value', fileData.dateValidityLicence],
+        ["d-soat", 'value', fileData.soat],
+        ["d-vig-soat", 'value', fileData.dateValiditySoat],
+        ["d-brand", 'value', fileData.brand],
+        ["d-model", 'value', fileData.model],
+        ["d-plate", 'value', fileData.plate],
+        ["d-yearBuild", 'value', fileData.yearBuild],
+        ["d-category", 'value', fileData.category],
+        ["d-numSerieVehicle", 'value', fileData.numSerieVehicle],
+        ["d-numEngine", 'value', fileData.numEngine],
+        ["d-color", 'value', fileData.color],
+        ["d-codeVest", 'value', fileData.codeVest],
+        ["d-vig-inspection", 'value', fileData.dateValidityInspection],
+        ["urlLinkDni", 'href', fileData.fileUrlDNI],
+        ["urlLinkLicence", 'href', fileData.fileURLLicence],
+        ["urlLinkSoat", 'href', fileData.fileURLSOAT],
+        ["urlLinkInspection", 'href', fileData.fileURLInspection],
+        ["urlLinkTerms", 'href', fileData.fileURLTerms],
+        ["urlLinkSunarp", 'href', fileData.fileURLSunarp]
+    ]);
+    document.getElementById("d-status").innerHTML = getStatusFromDetails(fileData.status);
+    handleElementVisibility(fileData);
+}
 
-    document.getElementById("d-licence").value = fileData.licence
-    document.getElementById("d-vig-licence").value = fileData.dateValidityLicence
-    document.getElementById("d-soat").value = fileData.soat
-    document.getElementById("d-vig-soat").value = fileData.dateValiditySoat
-    
-    document.getElementById("d-brand").value = fileData.brand
-    document.getElementById("d-model").value = fileData.model
-    document.getElementById("d-plate").value = fileData.plate
-    document.getElementById("d-yearBuild").value = fileData.yearBuild
-    document.getElementById("d-category").value = fileData.category
-    document.getElementById("d-numSerieVehicle").value = fileData.numSerieVehicle
-    document.getElementById("d-numEngine").value = fileData.numEngine
-    document.getElementById("d-color").value = fileData.color
-    document.getElementById("d-codeVest").value = fileData.codeVest
+function setElementValue(id, attribute, value) {
+    const element = document.getElementById(id);
+    element[attribute] = value;
+}
 
-    document.getElementById("d-vig-inspection").value = fileData.dateValidityInspection
+function setElementValues(data) {
+    data.forEach(item => {
+        setElementValue(item[0], item[1], item[2]);
+    });
+}
 
-    document.getElementById("d-sunarpObs").style.display = "none"
+function handleElementVisibility(fileData) {
+    const disable = ["registered", "migrated", "corrected", "acepted", "denied", "aproved"].includes(fileData.status);
+    disableFields(disable);
 
+    hideAllObservedElements();  // Ocultar elementos específicos de estados observados por defecto
 
-    document.getElementById("d-status").innerHTML = getStatusFromDetails(fileData.status)
+    if (fileData.status === "observed") {
+        manageObservedState(fileData);
+    } else if (fileData.status === "aproved") {
+        manageApprovedState(fileData);
+    }
+}
 
-    if(fileData.status == "registered" || fileData.status == "migrated" || fileData.status == "corrected" || fileData.status == "acepted" || fileData.status == "denied"){
-        //addOn-observed btnCorect
-        document.getElementById("d-dni").disabled = true
-        document.getElementById("d-dni-addon-file").style.display = "none"
-        document.getElementById("d-dniFile").style.display = "none"
-        document.getElementById("d-dniFile").disabled = true
-        document.getElementById("d-email").disabled = true
-        document.getElementById("d-phone").disabled = true
+function disableFields(disable) {
+    const fields = document.querySelectorAll('.form-control, .custom-file-input');
+    fields.forEach(field => {
+        field.disabled = disable;
+        if (field.classList.contains('custom-file-input')) {
+            document.getElementById(field.id.replace('File', '') + '-addon').style.display = disable ? 'none' : 'flex';
+        }
+    });
+}
 
-        document.getElementById("d-licence").disabled = true
-        document.getElementById("d-vig-licence").disabled = true
-        document.getElementById("d-soat").disabled = true
-        document.getElementById("d-vig-soat").disabled = true
+function manageObservedState(fileData) {
 
-        document.getElementById("d-brand").disabled = true
-        document.getElementById("d-model").disabled = true
-        document.getElementById("d-plate").disabled = true
-        document.getElementById("d-yearBuild").disabled = true
-        document.getElementById("d-category").disabled = true
-        document.getElementById("d-numSerieVehicle").disabled = true
-        document.getElementById("d-numEngine").disabled = true
-        document.getElementById("d-color").disabled = true
-        document.getElementById("d-codeVest").disabled = true
+    document.getElementById("licence-addon").style.display = "flex";
+    document.getElementById("d-licenceFile").style.display = "flex";
+    document.getElementById("d-licenceFile").value = ""
+    document.getElementById("soat-addon").style.display = "flex";
+    document.getElementById("d-soatFile").style.display = "flex";
+    document.getElementById("d-soatFile").value = ""
+    document.getElementById("inspection-addon").style.display = "flex";
+    document.getElementById("d-inspectionFile").style.display = "flex";
+    document.getElementById("d-inspectionFile").value = ""
+    document.getElementById("d-termsFile").style.display = "flex";
+    document.getElementById("d-termsFile").value = ""
+    document.getElementById("d-sunarpFile").style.display = "flex";
+    document.getElementById("d-sunarpFile").value = ""
 
-        document.getElementById("d-vig-inspection").disabled = true
+    document.getElementById("d-div-content-certificated").innerHTML = ""
+    document.getElementById("d-addOn-observed").style = "display:flex;width:100%";
+    document.getElementById("d-btnCorrect").style = "display:flex;width:100%";
+    document.getElementById("d-txtObserved").value = fileData.txtNote;
+    document.getElementById("d-txtObserved").disabled = true;
+    document.getElementById("d-txtObserved").style = "font-weight:bold;background-color:white;text-transform: uppercase;color:red;";
+    document.getElementById("d-sunarpObs").style.display = "flex";
 
-        document.getElementById("d-addOn-observed").style = "display:none;"
-        document.getElementById("d-btnCorrect").style = "display:none;"
-        document.getElementById("d-btnCorrect").innerHTML = ``
-        document.getElementById("d-div-content-certificated").innerHTML = ``
-        document.getElementById("d-txtObserved").style = "display:none;"
-        
+    document.getElementById("d-btnCorrect").innerHTML = `
+        <button id="d-btnSendCorrected" class="btn btn-success" onclick="sendOberved('${fileData.id}','${fileData.idFolder}','${fileData.idInCharge}','${fileData.folder}','${fileData.code}','${fileData.nameAssociation}')">Enviar corrección</button>`;
+}
 
-    }else if(fileData.status == "aproved"){
-
-        document.getElementById("d-dni").disabled = true
-        document.getElementById("d-dni-addon-file").style.display = "none"
-        document.getElementById("d-dniFile").style.display = "none"
-        document.getElementById("d-dniFile").disabled = true
-        document.getElementById("d-email").disabled = true
-        document.getElementById("d-phone").disabled = true
-        document.getElementById("d-brand").disabled = true
-        document.getElementById("d-model").disabled = true
-        document.getElementById("d-plate").disabled = true
-        document.getElementById("d-yearBuild").disabled = true
-        document.getElementById("d-category").disabled = true
-        document.getElementById("d-numSerieVehicle").disabled = true
-        document.getElementById("d-numEngine").disabled = true
-        document.getElementById("d-color").disabled = true
-        document.getElementById("d-codeVest").disabled = true
-
-        document.getElementById("d-addOn-observed").style = "display:none;"
-        document.getElementById("d-txtObserved").style = "display:none;"
-        document.getElementById("d-btnCorrect").style = "display:none;"
-        document.getElementById("d-btnCorrect").innerHTML = ``
-        document.getElementById("d-div-content-certificated").innerHTML = `<span class="input-group-text">Certificado de capacitación</span>
+function manageApprovedState(fileData) {
+    const approvedHTML = `<span class="input-group-text">Certificado de capacitación</span>
                             <span style="background-color: #00a822;color: #ffffff;" class="input-group-text">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
                                     <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
@@ -530,47 +538,25 @@ function showDetails(button) {
                                     <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
                                   </svg>
                                 &nbsp;  
-                                <a id="linkDownloadResolution" style="color: #ffffff;text-decoration: none;" href="${fileData.fileUrlResolution}" target="_blank">Descargar</a></span>
-                                `
-    }else if(fileData.status == "observed"){
-
-        document.getElementById("d-dni").disabled = false
-        document.getElementById("d-dni-addon-file").style = "display : flex;font-weight: 600;font-size: 12px;color: #014c69;"
-        document.getElementById("d-dniFile").style.display = "flex"
-        document.getElementById("d-dniFile").disabled = false
-        document.getElementById("d-email").disabled = false
-        document.getElementById("d-phone").disabled = false
-
-        document.getElementById("d-licence").value = fileData.licence
-        document.getElementById("d-vig-licence").value = fileData.dateValidityLicence
-        document.getElementById("d-soat").value = fileData.soat
-        document.getElementById("d-vig-soat").value = fileData.dateValiditySoat
-
-        document.getElementById("d-brand").disabled = false
-        document.getElementById("d-model").disabled = false
-        document.getElementById("d-plate").disabled = false
-        document.getElementById("d-yearBuild").disabled = false
-        document.getElementById("d-category").disabled = false
-        document.getElementById("d-numSerieVehicle").disabled = false
-        document.getElementById("d-numEngine").disabled = false
-        document.getElementById("d-color").disabled = false
-        document.getElementById("d-codeVest").disabled = false
-
-        document.getElementById("d-addOn-observed").style = "display:flex;width:100%"
-        document.getElementById("d-btnCorrect").style = "display:flex;width:100%"
-        document.getElementById("d-txtObserved").value = fileData.txtNote
-        document.getElementById("d-txtObserved").disabled = true
-        document.getElementById("d-txtObserved").style = "font-weight:bold;background-color:white;text-transform: uppercase;color:red;"
-
-        document.getElementById("d-sunarpObs").style.display = "flex"
-
-        document.getElementById("d-div-content-certificated").innerHTML = ``
-
-        document.getElementById("d-btnCorrect").innerHTML = `
-        <button id="d-btnSendCorrected" class="btn btn-success" onclick="sendOberved('${fileData.id}','${fileData.idFolder}','${fileData.idInCharge}','${fileData.folder}','${fileData.code}','${fileData.nameAssociation}')" >Enviar correción</button>`
-
-    }
+                                <a id="linkDownloadResolution" style="color: #ffffff;text-decoration: none;" href="${fileData.fileUrlResolution}" target="_blank">Descargar</a></span>`;
+    document.getElementById("d-div-content-certificated").innerHTML = approvedHTML;
 }
+
+function hideAllObservedElements() {
+    // Ocultar elementos que son exclusivos del estado observed
+    document.getElementById("licence-addon").style.display = "none";
+    document.getElementById("d-licenceFile").style.display = "none";
+    document.getElementById("soat-addon").style.display = "none";
+    document.getElementById("d-soatFile").style.display = "none";
+    document.getElementById("inspection-addon").style.display = "none";
+    document.getElementById("d-inspectionFile").style.display = "none";
+    document.getElementById("d-termsFile").style.display = "none";
+    document.getElementById("d-sunarpFile").style.display = "none";
+
+    document.getElementById("d-addOn-observed").style.display = "none";
+    document.getElementById("d-btnCorrect").style.display = "none";
+}
+
 
 function getStatusFromDetails(status){
     if(status == "registered"){
@@ -693,6 +679,12 @@ function sendOberved(idFile, idFolder, idInCharge, desk, code, nameAssociation) 
     const email = document.getElementById('d-email').value.trim();
     const phone = document.getElementById('d-phone').value.trim();
 
+    const licence = document.getElementById('d-licence').value.trim();
+    const ValidityLicence = document.getElementById('d-vig-licence').value.trim();
+    const soat = document.getElementById('d-soat').value.trim();
+    const ValiditySoat = document.getElementById('d-vig-soat').value.trim();
+    const ValidityInspection = document.getElementById('d-vig-inspection').value.trim();
+
     const brand = document.getElementById("d-brand").value;
     const model = document.getElementById("d-model").value;
     const plate = document.getElementById("d-plate").value;
@@ -705,7 +697,8 @@ function sendOberved(idFile, idFolder, idInCharge, desk, code, nameAssociation) 
 
     // Validación de campos vacíos
     if (!dni || !name || !email || !phone || !brand || !model || !plate || !yearBuild || !numSerieVehicle ||
-        !numEngine || !color || !codeVest || !category) {
+        !numEngine || !color || !codeVest || !category || !ValidityInspection 
+        || !licence || !ValidityLicence || !soat || !ValiditySoat) {
         Swal.fire({
             title: "Campos incompletos",
             text: "Por favor, completa todos los campos antes de continuar.",
@@ -721,7 +714,12 @@ function sendOberved(idFile, idFolder, idInCharge, desk, code, nameAssociation) 
 
     // Captura los archivos seleccionados
     const dniFile = document.getElementById('d-dniFile').files[0];
+    const licenceFile = document.getElementById('d-licenceFile').files[0]; // Nuevo archivo
+    const soatFile = document.getElementById('d-soatFile').files[0]; // Nuevo archivo
+    const inspectionFile = document.getElementById('d-inspectionFile').files[0]; // Nuevo archivo
+    const termsFile = document.getElementById('d-termsFile').files[0]; // Nuevo archivo
     const sunarpFile = document.getElementById('d-sunarpFile').files[0]; // Nuevo archivo
+
 
     // Subir ambos archivos si están presentes
     const uploadPromises = [];
@@ -731,6 +729,38 @@ function sendOberved(idFile, idFolder, idInCharge, desk, code, nameAssociation) 
         const dniFileRef = firebase.storage().ref().child(`associations/${user.ruc}/files/dni/${dni}/${dniFile.name}`);
         const dniUploadTask = dniFileRef.put(dniFile).then(snapshot => snapshot.ref.getDownloadURL());
         uploadPromises.push(dniUploadTask);
+    } else {
+        uploadPromises.push(Promise.resolve(null)); // Si no hay archivo, mantener la consistencia
+    }
+
+    if (licenceFile) {
+        const licenceFileRef = firebase.storage().ref().child(`associations/${user.ruc}/files/licence/${dni}/${licenceFile.name}`);
+        const licenceUploadTask = licenceFileRef.put(licenceFile).then(snapshot => snapshot.ref.getDownloadURL());
+        uploadPromises.push(licenceUploadTask);
+    } else {
+        uploadPromises.push(Promise.resolve(null)); // Si no hay archivo, mantener la consistencia
+    }
+
+    if (soatFile) {
+        const soatFileRef = firebase.storage().ref().child(`associations/${user.ruc}/files/soat/${dni}/${soatFile.name}`);
+        const soatUploadTask = soatFileRef.put(soatFile).then(snapshot => snapshot.ref.getDownloadURL());
+        uploadPromises.push(soatUploadTask);
+    } else {
+        uploadPromises.push(Promise.resolve(null)); // Si no hay archivo, mantener la consistencia
+    }
+
+    if (inspectionFile) {
+        const inspectionFileRef = firebase.storage().ref().child(`associations/${user.ruc}/files/inspection/${dni}/${inspectionFile.name}`);
+        const inspectionUploadTask = inspectionFileRef.put(inspectionFile).then(snapshot => snapshot.ref.getDownloadURL());
+        uploadPromises.push(inspectionUploadTask);
+    } else {
+        uploadPromises.push(Promise.resolve(null)); // Si no hay archivo, mantener la consistencia
+    }
+
+    if (termsFile) {
+        const termsFileRef = firebase.storage().ref().child(`associations/${user.ruc}/files/terms/${dni}/${termsFile.name}`);
+        const termsUploadTask = termsFileRef.put(termsFile).then(snapshot => snapshot.ref.getDownloadURL());
+        uploadPromises.push(termsUploadTask);
     } else {
         uploadPromises.push(Promise.resolve(null)); // Si no hay archivo, mantener la consistencia
     }
@@ -745,139 +775,97 @@ function sendOberved(idFile, idFolder, idInCharge, desk, code, nameAssociation) 
     }
 
     Promise.all(uploadPromises)
-        .then(([dniFileURL, sunarpFileURL]) => {
-            // Guarda los datos del formulario y las URLs de los archivos en Firestore
-            const fileRef = firebase.firestore().collection('files').doc(idFile);
+    .then(results => {
+        // Extracción de URLs desde los resultados
+        const [dniFileURL, licenceFileURL, soatFileURL, inspectionFileURL, termsFileURL, sunarpFileURL] = results;
 
-            let myUpdate = {}
+        // Guarda los datos del formulario en Firestore
+        const fileRef = firebase.firestore().collection('files').doc(idFile);
+        let updateData = {
+            dni,
+            name,
+            email,
+            phone,
+            licence,
+            ValidityLicence,
+            soat,
+            ValiditySoat,
+            ValidityInspection,
+            brand,
+            model,
+            plate,
+            yearBuild,
+            numSerieVehicle,
+            numEngine,
+            color,
+            codeVest,
+            category,
+            status: "corrected",
+            timestamp: Date.now()
+        };
 
-            if(dniFile && sunarpFile){
-                myUpdate = {
-                    dni: dni,
-                    name: name,
-                    email: email,
-                    phone: phone,
-                    brand: brand,
-                    model: model,
-                    plate: plate,
-                    yearBuild: yearBuild,
-                    numSerieVehicle: numSerieVehicle,
-                    numEngine: numEngine,
-                    color: color,
-                    codeVest: codeVest,
-                    category: category,
-                    status: "corrected",
-                    fileUrlDNI: dniFileURL,
-                    fileURLSunarp: sunarpFileURL, // URL del archivo SUNARP (si existe)
-                    timestamp: Date.now()
-                }
-            }else if(dniFile){
-                myUpdate = {
-                    dni: dni,
-                    name: name,
-                    email: email,
-                    phone: phone,
-                    brand: brand,
-                    model: model,
-                    plate: plate,
-                    yearBuild: yearBuild,
-                    numSerieVehicle: numSerieVehicle,
-                    numEngine: numEngine,
-                    color: color,
-                    codeVest: codeVest,
-                    category: category,
-                    status: "corrected",
-                    fileUrlDNI: dniFileURL, // URL del archivo DNI (si existe)
-                    timestamp: Date.now()
-                }
-            }else if(sunarpFile){
-                myUpdate = {
-                    dni: dni,
-                    name: name,
-                    email: email,
-                    phone: phone,
-                    brand: brand,
-                    model: model,
-                    plate: plate,
-                    yearBuild: yearBuild,
-                    numSerieVehicle: numSerieVehicle,
-                    numEngine: numEngine,
-                    color: color,
-                    codeVest: codeVest,
-                    category: category,
-                    status: "corrected",
-                    fileURLSunarp:sunarpFileURL, // URL del archivo DNI (si existe)
-                    timestamp: Date.now()
-                }
-            }else{
-                myUpdate = {
-                    dni: dni,
-                    name: name,
-                    email: email,
-                    phone: phone,
-                    brand: brand,
-                    model: model,
-                    plate: plate,
-                    yearBuild: yearBuild,
-                    numSerieVehicle: numSerieVehicle,
-                    numEngine: numEngine,
-                    color: color,
-                    codeVest: codeVest,
-                    category: category,
-                    status: "corrected",
-                    timestamp: Date.now()
-            }
-        }
+        // Añade URLs sólo si están disponibles
+        if (dniFileURL) updateData.fileUrlDNI = dniFileURL;
+        if (licenceFileURL) updateData.fileURLLicence = licenceFileURL;
+        if (soatFileURL) updateData.fileURLSOAT = soatFileURL;
+        if (inspectionFileURL) updateData.fileURLInspection = inspectionFileURL;
+        if (termsFileURL) updateData.fileURLTerms = termsFileURL;
+        if (sunarpFileURL) updateData.fileURLSunarp = sunarpFileURL;
 
-            return fileRef.update(myUpdate);
-        })
-        .then(() => {
-            return firebase.firestore().collection('folders').doc(idFolder).update({ 
-                status: "corrected", 
-                dateRegister: Date.now() 
-            });
-        })
-        .then(() => {
-            return firebase.firestore().collection("notifications").add({
-                idFolder: idFolder,
-                name: user.name,
-                idUser: idInCharge,
-                title: `El expediente #${code} ha sido corregido`,
-                type: "file",
-                content: `La Asociación ${nameAssociation} con el expediente #${code} ha sido corregido en la carpeta: ${desk}`,
-                isOpen: false,
-                timestamp: Date.now()
-            });
-        })
-        .then(() => {
-            return firebase.firestore().collection("logs").add({
-                idUser: user.id,
-                nameUser: user.name,
-                type: "update",
-                content: `El usuario ha actualizado un estado a: corregido`,
-                timestamp: Date.now()
-            });
-        })
-        .then(() => {
-            Swal.fire({
-                title: "Muy bien",
-                text: "Expediente corregido!",
-                icon: "success"
-            });
-            $('#details').modal('hide');
-            document.getElementById('d-loader2').style.display = 'none';
-            document.getElementById("d-btn-close-modal").style.display = "block";
-        })
-        .catch(error => {
-            Swal.fire({
-                title: "Oops",
-                text: "Ocurrió un error!",
-                icon: "error"
-            });
-            document.getElementById('d-loader2').style.display = 'none';
-            document.getElementById("d-btn-close-modal").style.display = "block";
-            console.error('Error:', error);
+        return fileRef.update(updateData);
+    })
+    .then(() => {
+        // Actualizar la carpeta correspondiente para reflejar el estado corregido
+        return firebase.firestore().collection('folders').doc(idFolder).update({
+            status: "corrected",
+            dateRegister: Date.now()
         });
+    })
+    .then(() => {
+        // Registrar la notificación de que el archivo ha sido corregido
+        return firebase.firestore().collection("notifications").add({
+            idFolder: idFolder,
+            name: user.name,
+            idUser: idInCharge,
+            title: `El expediente #${code} ha sido corregido`,
+            type: "file",
+            content: `La Asociación ${nameAssociation} con el expediente #${code} ha sido corregido en la carpeta: ${desk}`,
+            isOpen: false,
+            timestamp: Date.now()
+        });
+    })
+    .then(() => {
+        // Registrar en los logs del sistema la acción de corrección
+        return firebase.firestore().collection("logs").add({
+            idUser: user.id,
+            nameUser: user.name,
+            type: "update",
+            content: `El usuario ha actualizado un estado a corregido para el expediente #${code}`,
+            timestamp: Date.now()
+        });
+    })
+    .then(() => {
+        Swal.fire({
+            title: "Muy bien",
+            text: "¡Expediente corregido exitosamente!",
+            icon: "success"
+        });
+        $('#details').modal('hide');
+        document.getElementById('d-loader2').style.display = 'none';
+        document.getElementById("d-btn-close-modal").style.display = "block";
+    })
+    .catch(error => {
+        // Manejo de errores
+        Swal.fire({
+            title: "Oops",
+            text: "¡Ocurrió un error al tratar de corregir el expediente! " + error.message,
+            icon: "error"
+        });
+        console.error('Error:', error);
+        document.getElementById('d-loader2').style.display = 'none';
+        document.getElementById("d-btn-close-modal").style.display = "block";
+    });
+
 }
 
 

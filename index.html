@@ -179,10 +179,18 @@
 			const email = document.getElementById("resetEmail").value;
 			if (email) {
 				// Aquí puedes agregar la lógica para enviar el restablecimiento de contraseña
-				alert("Correo de restablecimiento enviado a " + email);
+				Swal.fire({
+							title: "Muy bien",
+							text: "Correo de restablecimiento enviado a " + email,
+							icon: "success"
+						});
 				closeModal();
 			} else {
-				alert("Por favor, ingresa un correo válido.");
+				Swal.fire({
+							title: "Muy bien",
+							text: "Por favor, ingresa un correo válido",
+							icon: "success"
+						});
 			}
 		}
 

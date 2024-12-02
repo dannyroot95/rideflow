@@ -10,18 +10,34 @@ function validateForm() {
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     if (!email) {
-        alert("El campo de correo es obligatorio.");
+      Swal.fire({
+        title: "Oops",
+        text: "El campo de correo es obligatorio.",
+        icon: "warning"
+      });
         return false;
     } else if (!emailPattern.test(email)) {
-        alert("Por favor, introduce una dirección de correo válida.");
+      Swal.fire({
+        title: "Oops",
+        text: "Por favor, introduce una dirección de correo válida.",
+        icon: "warning"
+      });
         return false;
     }
 
     if (!password) {
-        alert("El campo de contraseña es obligatorio.");
+      Swal.fire({
+        title: "Oops",
+        text: "El campo de contraseña es obligatorio.",
+        icon: "warning"
+      });
         return false;
     } else if (password.length < 6) {
-        alert("La contraseña debe tener al menos 6 caracteres.");
+      Swal.fire({
+        title: "Oops",
+        text: "La contraseña debe tener al menos 6 caracteres.",
+        icon: "warning"
+      });
         return false;
     }
 
@@ -106,11 +122,23 @@ function validateForm() {
        document.getElementById("lostPassword").style = "display:block"
 
       if (errorCode === 'auth/wrong-password') {
-        alert("Contraseña incorrecta.");
+        Swal.fire({
+          title: "Oops",
+          text: "Contraseña incorrecta.",
+          icon: "warning"
+        });
       } else if (errorCode === 'auth/user-not-found') {
-        alert("Usuario no encontrado.");
+        Swal.fire({
+          title: "Oops",
+          text: "Usuario no encontrado.",
+          icon: "warning"
+        });
       } else {
-        alert(errorMessage);
+        Swal.fire({
+          title: "Oops",
+          text: "Credenciales invalidas",
+          icon: "warning"
+        });
       }
     });
     // Aquí puedes añadir el código para enviar el formulario

@@ -2,6 +2,10 @@
 let dataUser = localStorage.getItem("userData");
 let user = dataUser ? JSON.parse(dataUser) : null;
 var dataExcel = []
+var allOperators = []
+var idAsociation = ""
+
+getAllOperators()
 
 function createDatatable() {
     $('#tb-data').DataTable({
@@ -42,6 +46,70 @@ function createDatatable() {
 }
 
 createDatatable();
+
+function createDatatable2() {
+    $('#tb-data1').DataTable({
+        language: {
+            "decimal": "",
+            "emptyTable": "No hay información",
+            "info": "Mostrando _TOTAL_ datos",
+            "infoEmpty": "<b>No existen datos</b>",
+            "infoFiltered": "(Filtrado de _MAX_ total datos)",
+            "infoPostFix": "",
+            "thousands": ",",
+            "lengthMenu": "Mostrar _MENU_ datos",
+            "loadingRecords": "Cargando...",
+            "processing": "Procesando...",
+            "search": "Buscar : ",
+            "zeroRecords": "Sin resultados encontrados",
+            "paginate": {
+                "first": "Primero",
+                "last": "Último",
+                "next": "Siguiente",
+                "previous": "Anterior"
+            }
+        },
+        scrollY: '50vh',
+        scrollX: true,
+        sScrollXInner: "100%",
+        scrollCollapse: true,
+        destroy: true, // Permite destruir la tabla para reinicializarla
+    });
+}
+
+createDatatable2();
+
+function createDatatable3() {
+    $('#tb-data2').DataTable({
+        language: {
+            "decimal": "",
+            "emptyTable": "No hay información",
+            "info": "Mostrando _TOTAL_ datos",
+            "infoEmpty": "<b>No existen datos</b>",
+            "infoFiltered": "(Filtrado de _MAX_ total datos)",
+            "infoPostFix": "",
+            "thousands": ",",
+            "lengthMenu": "Mostrar _MENU_ datos",
+            "loadingRecords": "Cargando...",
+            "processing": "Procesando...",
+            "search": "Buscar : ",
+            "zeroRecords": "Sin resultados encontrados",
+            "paginate": {
+                "first": "Primero",
+                "last": "Último",
+                "next": "Siguiente",
+                "previous": "Anterior"
+            }
+        },
+        scrollY: '50vh',
+        scrollX: true,
+        sScrollXInner: "100%",
+        scrollCollapse: true,
+        destroy: true, // Permite destruir la tabla para reinicializarla
+    });
+}
+
+createDatatable3();
 
 const dataTable = $('#tb-data').DataTable();
 const usersCollection = db.collection('users');
@@ -111,7 +179,6 @@ document.getElementById("createUserForm").addEventListener("submit", async (e) =
     e.preventDefault();
 
     const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
     const name = document.getElementById("name").value;
     const dni = document.getElementById("dni").value;
     const ruc = document.getElementById("ruc").value;
@@ -123,13 +190,11 @@ document.getElementById("createUserForm").addEventListener("submit", async (e) =
     const typeUser = "association"; // Tipo de usuario "asociación"
     const auth = firebase.auth();
 
-    if (password.length > 5 && file) {
-
         disable();
 
         try {
             // Crear usuario en Firebase Authentication
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const userCredential = await auth.createUserWithEmailAndPassword(email, "TemporaryPassword123!");
             const userId = userCredential.user.uid;
 
             // Subir archivo PDF a Firebase Storage
@@ -161,10 +226,15 @@ document.getElementById("createUserForm").addEventListener("submit", async (e) =
                         timestamp : Date.now()
             });
 
+            const actionCodeSettings = {
+                url: 'https://rideflow.online', // Cambia a tu URL
+                handleCodeInApp: true
+            };
+            await auth.sendPasswordResetEmail(email, actionCodeSettings);
 
             Swal.fire({
                 title: "Muy bien",
-                text: "Asociación creada!",
+                text: "Asociación creada!, se envio al correo la restauración de contraseña.",
                 icon: "success"
             });
 
@@ -179,14 +249,7 @@ document.getElementById("createUserForm").addEventListener("submit", async (e) =
                 icon: "error"
             });
         }
-    } else {
-        enable();
-        Swal.fire({
-            title: "Oops",
-            text: "La contraseña debe tener más de 5 caracteres y se debe subir un archivo PDF.",
-            icon: "info"
-        });
-    }
+    
 });
 
 // Función para activar/desactivar usuarios
@@ -208,11 +271,175 @@ function toggleUserStatus(idUser, newStatus, idLabel) {
 }
 
 function showDetails(button) {
-    // Recupera el objeto user desde el atributo data-user del botón
-    const userData = JSON.parse(button.getAttribute('data-user'));
-    // Aquí puedes manejar la visualización de los detalles del usuario
-    console.log(userData);
-    alert(`Asociacion: ${userData.association}\nEmail: ${userData.email}\nEstado: ${userData.status}`);
+
+    const data = JSON.parse(button.getAttribute('data-user'));
+    $('#detailAsociation').modal('show'); 
+    document.getElementById("nameAsociation").value = data.association
+    document.getElementById("boss").value = data.name
+    document.getElementById("rucDetail").value = data.ruc
+    document.getElementById("phoneDetail").value = data.phone
+    idAsociation = data.id
+
+    setTimeout(() => {
+        // Selecciona todos los elementos con la clase "dt-column-order"
+        const elements = document.querySelectorAll('.dt-column-order');
+        // Itera sobre los elementos y dispara un evento de clic en cada uno
+        elements.forEach(element => {
+            element.click(); // Simula un clic en el elemento
+        });
+    }, 500);
+
+    setDataExpedients(idAsociation)
+    setDataFolders(data.ruc)
+
+}
+
+async function getAllOperators() {
+    try {
+        // Obtiene los documentos de Firestore
+        const snapshot = await db.collection('users').where("typeUser", "==", "operator").get();
+        
+        // Procesa los documentos
+        const allOperators = [];
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const option = `<option value="${data.id}">${data.name} ${data.lastName}</option>`
+            $(option).appendTo('#selectOperator');
+        });
+
+        // Muestra el resultado en la consola
+        console.log(allOperators);
+    } catch (error) {
+        console.error("Error al obtener documentos: ", error);
+    }
+}
+
+
+async function setDataExpedients(id) {
+    try {
+        const dataTable = $('#tb-data1').DataTable();
+        
+        const snapshot = await db.collection('files').where("idUserAssociation", "==", id).get();
+        
+        // Limpia el DataTable antes de añadir nuevos datos
+        dataTable.clear();
+        
+        snapshot.forEach((doc) => {
+            const fileData = doc.data();
+            let details = `<center><button class="btn btn-danger" data-user='${JSON.stringify(fileData)}' 
+                onclick="showMigrate('file','${fileData.id}')">Migrar</button></center>`;
+            
+            let status = getStatus(fileData.status);
+
+            // Añadir los datos a DataTable
+            dataTable.row.add([
+                details,
+                fileData.code,
+                fileData.name,
+                fileData.dni,
+                fileData.phone,
+                formatoFechaDesdeTimestamp(fileData.dateRegister) + " " + obtenerHoraMinutoDesdeTimestamp(fileData.dateRegister),
+                status
+            ]);
+        });
+        
+        // Dibuja el DataTable con los nuevos datos
+        dataTable.draw(false);
+        dataTable.columns.adjust().draw(false);
+    } catch (error) {
+        console.error("Error al obtener documentos: ", error);
+    }
+}
+
+
+async function setDataFolders(ruc) {
+    try {
+        const dataTable = $('#tb-data2').DataTable();
+        
+        // Obtiene los documentos de Firestore
+        const snapshot = await db.collection('folders').where("association", "==", ruc).get();
+        
+        // Limpia el DataTable antes de añadir nuevos datos
+        dataTable.clear();
+        
+        // Procesa cada documento
+        snapshot.docs.forEach((doc) => {
+            const folderData = doc.data();
+            let inCharge = folderData.nameInCharge || "Ninguno";
+
+            // Genera el contenido dinámico para la fila
+            let content = `
+                <div class="accordion accordion-flush">  
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading${doc.id}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${doc.id}" aria-expanded="false" aria-controls="collapse${doc.id}">  
+                                Código de carpeta: ${folderData.codeFolder} &nbsp;&nbsp; | 
+                                &nbsp;&nbsp; Cantidad de expedientes : ${folderData.quantityFiles} &nbsp;&nbsp; | 
+                                &nbsp;&nbsp; A cargo de : ${inCharge} &nbsp;&nbsp; |
+                                &nbsp;&nbsp; Fecha de operación : ${formatoFechaDesdeTimestamp(folderData.dateRegister)} ${obtenerHoraMinutoDesdeTimestamp(folderData.dateRegister)}
+                            </button>
+                        </h2>
+                    </div>
+                </div>`;
+
+            let button = `<center><button onclick="showMigrate('folder','${folderData.id}')" class="btn btn-danger">Migrar</button></center>`    
+            
+            // Añade la fila al DataTable
+            dataTable.row.add([button,content]);
+        });
+        
+        // Dibuja el DataTable con los nuevos datos
+        dataTable.draw(false);
+        dataTable.columns.adjust().draw(false);
+    } catch (error) {
+        console.error("Error al obtener documentos: ", error);
+    }
+}
+
+function showMigrate(type,id){
+    $('#updateMigrate').modal('show'); 
+    if(type == "folder"){
+        alert("folder -> "+id)
+    }else{
+        alert("file -> "+id)
+    }
+}
+
+
+function getStatus(status){
+    if(status == "registered"){
+        status = `<b style="color:#048e34;">Registrado</b>`
+    }else if(status == "migrated"){
+        status = `<b style="color:#b49600;">Migrado</b>`
+    }else if(status == "observed"){
+        status = `<b style="color:#fc0000;">Observado</b>`
+    }else if(status == "corrected"){
+        status = `<b style="color:#009083;">Corregido</b>`
+    }else if(status == "acepted"){
+        status = `<b style="color:#900C3F;">Aceptado</b>`
+    }else if(status == "aproved"){
+        status = `<b style="color:#00356d;">Aprobado</b>`
+    }else if(status == "denied"){
+        status = `<b style="color:#fc0000;">Denegado</b>`
+    }
+    return status
+}
+
+function formatoFechaDesdeTimestamp(timestamp) {
+    const fecha = new Date(timestamp);
+    const dia = String(fecha.getDate()).padStart(2, '0'); // Obtiene el día y lo formatea
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0'); // Obtiene el mes y lo formatea
+    const anio = fecha.getFullYear(); // Obtiene el año
+
+    return `${dia}/${mes}/${anio}`; // Devuelve la fecha en formato dd/mm/yyyy
+}
+
+function obtenerHoraMinutoDesdeTimestamp(timestamp) {
+    const fecha = new Date(timestamp);
+    const horas = String(fecha.getHours()).padStart(2, '0'); // Obtiene las horas y las formatea
+    const minutos = String(fecha.getMinutes()).padStart(2, '0'); // Obtiene los minutos y los formatea
+
+    return `${horas}:${minutos}`; // Devuelve la hora en formato HH:mm
 }
 
 function enable(){

@@ -56,7 +56,7 @@ usersCollection.where("typeUser", "not-in", ["association", "superAdmin"]).onSna
 
         let details = `<center><button class="btn btn-light" style="background-color:#000;color:white;" data-user='${JSON.stringify(userData)}' onclick="showDetails(this)"><i class="bi bi-eye-fill"></i></button></center>`;
 
-        if(user.typeUser == "superAdmin"){
+        if (user.typeUser === "superAdmin") {
             details = `<center>
             <button class="btn btn-light" style="background-color:#000;color:white;" data-user='${JSON.stringify(userData)}' onclick="showDetails(this)">
             <i class="bi bi-eye-fill"></i>
@@ -144,7 +144,6 @@ document.getElementById("createUserForm").addEventListener("submit", async (e) =
     e.preventDefault();
 
     const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
     const name = document.getElementById("name").value;
     const lastName = document.getElementById("lastName").value;
     const dni = document.getElementById("dni").value;
@@ -153,63 +152,61 @@ document.getElementById("createUserForm").addEventListener("submit", async (e) =
     const typeUser = document.getElementById("typeUser").value;
     const auth = firebase.auth();
 
-    if(password.length > 5){
+    disable(); // Deshabilitar botones o interacciones mientras se procesa
 
-        disable()
+    try {
+        // Crear al usuario en Firebase Authentication
+        const userCredential = await auth.createUserWithEmailAndPassword(email, "TemporaryPassword123!");
+        const userId = userCredential.user.uid;
 
-        try {
-            // Crear el usuario en Firebase Authentication
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-            const userId = userCredential.user.uid;
-    
-            // Guardar los datos del usuario en Firestore
-            await db.collection("users").doc(userId).set({
-                id: userId,
-                name: name,
-                lastName: lastName,
-                dni: dni,
-                email: email,
-                phone: phone,
-                status: status,
-                typeUser: typeUser
-            });
+        // Guardar los datos adicionales del usuario en Firestore
+        await db.collection("users").doc(userId).set({
+            id: userId,
+            name: name,
+            lastName: lastName,
+            dni: dni,
+            email: email,
+            phone: phone,
+            status: "on",
+            typeUser: typeUser
+        });
 
-            await firebase.firestore().collection("logs").add({
-                idUser: user.id,
-                nameUser:user.name,
-                type : "create",
-                content : `El usuario ha creado un usuario : ${typeUser}`,
-                timestamp : Date.now()
-            });
-    
-            Swal.fire({
-                title: "Muy bien",
-                text: "Usuario creado!",
-                icon: "success"
-              });
+        // Enviar enlace para que el usuario establezca su contraseña
+        const actionCodeSettings = {
+            url: 'https://rideflow.online', // Cambia a tu URL
+            handleCodeInApp: true
+        };
+        await auth.sendPasswordResetEmail(email, actionCodeSettings);
 
-            $('#userModal').modal('hide');
-            enable()
-    
-        } catch (error) {
-            enable()
-            Swal.fire({
-                title: "Oops",
-                text: "Error al crear el usuario -> "+error.message,
-                icon: "error"
-              });
-        }
-    }else{
-        enable()
+        // Registrar la acción en los logs
+        await firebase.firestore().collection("logs").add({
+            idUser: userId,
+            nameUser: `${name} ${lastName}`,
+            type: "create",
+            content: `El usuario ha solicitado crear un usuario: ${typeUser}`,
+            timestamp: Date.now()
+        });
+
+        Swal.fire({
+            title: "Muy bien",
+            text: "¡El usuario ha sido creado y el enlace para establecer contraseña se ha enviado al correo!",
+            icon: "success"
+        });
+
+        $('#userModal').modal('hide');
+        enable();
+
+    } catch (error) {
+        enable();
+        console.error("Error al crear el usuario:", error);
         Swal.fire({
             title: "Oops",
-            text: "Debe tener mas de 5 caracteres!",
-            icon: "info"
-          });
+            text: "Error al procesar la solicitud -> " + error.message,
+            icon: "error"
+        });
     }
-
-  
 });
+
 
 function deleteUser(uid,name,lastName){
 

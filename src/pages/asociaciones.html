@@ -99,8 +99,8 @@
 
                         <!-- Nombres -->
                         <div class="mb-3 input-group">
-                            <span class="input-group-text" id="name-addon">Nombres</span>
-                            <input type="text" class="form-control" id="name" placeholder="Ingresa los nombres" aria-label="Nombres" aria-describedby="name-addon" required 
+                            <span class="input-group-text" id="name-addon">Nombres y Apellidos</span>
+                            <input type="text" class="form-control" id="name" placeholder="Ingresa el nombre completo" aria-label="Nombres" aria-describedby="name-addon" required 
                              oninput="validateLetters(this)" onkeypress="return isLetter(event)">
                         </div>
 
@@ -135,13 +135,7 @@
                             <span class="input-group-text" id="file-function-addon">Licencia de funcionamiento</span>
                             <input placeholder="Sube la licencia de funcionamiento en PDF" maxlength="9" type="file" class="form-control" id="file-function" required>
                         </div>
-    
-                        <!-- Contraseña -->
-                        <label style="color: red;font-weight: 600;">**La contraseña debe tener más de 5 caracteres</label>  
-                        <div class="mb-3 input-group">
-                            <span class="input-group-text" id="password-addon">Contraseña</span>
-                            <input type="password" class="form-control" id="password" placeholder="Ingresa la contraseña" aria-label="Contraseña" aria-describedby="password-addon" required>
-                        </div>
+
     
                         <!-- Botón de Crear -->
                          <div class="modal-footer">
@@ -154,6 +148,95 @@
             </div>
         </div>
     </div>
+
+
+    <!--MODAL DETAIL ASOCIATION-->
+
+    <div class="modal fade" id="detailAsociation" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalle de la Asociación</h5>
+                    <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="mb-3 input-group">
+                        <span class="input-group-text">Asociación</span>
+                        <input type="text" class="form-control" style="color: #000000;background-color: white;" id="nameAsociation" disabled>
+                        <span class="input-group-text">Encargado</span>
+                        <input type="text" class="form-control" style="color: #000000;background-color: white;" id="boss" disabled>
+                        <span class="input-group-text">RUC</span>
+                        <input type="text" class="form-control" style="color: #000000;background-color: white;" id="rucDetail" disabled>
+                        <span class="input-group-text">Teléfono</span>
+                        <input type="text" class="form-control" style="color: #000000;background-color: white;" id="phoneDetail" disabled>
+                    </div>
+
+                    <br>
+
+                    <h5 style="color: #148300;font-weight: 700;">Expedientes</h5>
+
+                    <table class="table table-hover table-bordered display overflow-hidden" id="tb-data1">
+                        <thead>
+                            <tr> 
+                                <th></th>
+                                <th>Código de expediente</th>
+                                <th>Nombres</th>
+                                <th>DNI</th>
+                                <th>Teléfono</th>
+                                <th>Fecha de registro</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                         
+                        </tbody>
+                    </table>
+
+                    <h5 style="color: #530588;font-weight: 700;">Carpetas</h5>
+
+                    <table class="table table-hover table-bordered display overflow-hidden" id="tb-data2">
+                        <thead>
+                            <tr> 
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                         
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
+    <!--MODAL MIGRATE-->
+
+    <div class="modal fade" id="updateMigrate" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Selecione un operador</h5>
+                    <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="input-group mb-3">
+                        <select class="form-select" id="selectOperator">
+        
+                        </select>
+                      </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script src="../../js/config.js"></script>
     <script src='/src/pages/js/asociaciones.js'></script>
 </body>

@@ -3,7 +3,6 @@ let dataUser = localStorage.getItem("userData");
 let user = dataUser ? JSON.parse(dataUser) : null;
 var dataExcel = []
 var allOperators = []
-var idAsociation = ""
 
 getAllOperators()
 
@@ -272,14 +271,15 @@ function toggleUserStatus(idUser, newStatus, idLabel) {
 
 function showDetails(button) {
 
+    document.getElementById("tbody").innerHTML = ""
+    document.getElementById("loaderFolders").style = "display:flex;"
     const data = JSON.parse(button.getAttribute('data-user'));
     $('#detailAsociation').modal('show'); 
     document.getElementById("nameAsociation").value = data.association
     document.getElementById("boss").value = data.name
     document.getElementById("rucDetail").value = data.ruc
     document.getElementById("phoneDetail").value = data.phone
-    idAsociation = data.id
-
+  
     setTimeout(() => {
         // Selecciona todos los elementos con la clase "dt-column-order"
         const elements = document.querySelectorAll('.dt-column-order');
@@ -289,7 +289,6 @@ function showDetails(button) {
         });
     }, 500);
 
-    setDataExpedients(idAsociation)
     setDataFolders(data.ruc)
 
 }
@@ -315,93 +314,238 @@ async function getAllOperators() {
 }
 
 
-async function setDataExpedients(id) {
-    try {
-        const dataTable = $('#tb-data1').DataTable();
-        
-        const snapshot = await db.collection('files').where("idUserAssociation", "==", id).get();
-        
-        // Limpia el DataTable antes de añadir nuevos datos
-        dataTable.clear();
-        
-        snapshot.forEach((doc) => {
-            const fileData = doc.data();
-            let details = `<center><button class="btn btn-danger" data-user='${JSON.stringify(fileData)}' 
-                onclick="showMigrate('file','${fileData.id}')">Migrar</button></center>`;
-            
-            let status = getStatus(fileData.status);
 
-            // Añadir los datos a DataTable
-            dataTable.row.add([
-                details,
-                fileData.code,
-                fileData.name,
-                fileData.dni,
-                fileData.phone,
-                formatoFechaDesdeTimestamp(fileData.dateRegister) + " " + obtenerHoraMinutoDesdeTimestamp(fileData.dateRegister),
-                status
-            ]);
-        });
-        
-        // Dibuja el DataTable con los nuevos datos
-        dataTable.draw(false);
-        dataTable.columns.adjust().draw(false);
-    } catch (error) {
-        console.error("Error al obtener documentos: ", error);
-    }
-}
-
-
-async function setDataFolders(ruc) {
+function setDataFolders(ruc) {
     try {
         const dataTable = $('#tb-data2').DataTable();
-        
-        // Obtiene los documentos de Firestore
-        const snapshot = await db.collection('folders').where("association", "==", ruc).get();
-        
+        var idUserAssociation = ""
+        var codeFolder = ""
+
         // Limpia el DataTable antes de añadir nuevos datos
         dataTable.clear();
-        
-        // Procesa cada documento
-        snapshot.docs.forEach((doc) => {
-            const folderData = doc.data();
-            let inCharge = folderData.nameInCharge || "Ninguno";
 
-            // Genera el contenido dinámico para la fila
-            let content = `
-                <div class="accordion accordion-flush">  
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading${doc.id}">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${doc.id}" aria-expanded="false" aria-controls="collapse${doc.id}">  
-                                Código de carpeta: ${folderData.codeFolder} &nbsp;&nbsp; | 
-                                &nbsp;&nbsp; Cantidad de expedientes : ${folderData.quantityFiles} &nbsp;&nbsp; | 
-                                &nbsp;&nbsp; A cargo de : ${inCharge} &nbsp;&nbsp; |
-                                &nbsp;&nbsp; Fecha de operación : ${formatoFechaDesdeTimestamp(folderData.dateRegister)} ${obtenerHoraMinutoDesdeTimestamp(folderData.dateRegister)}
+        // Escucha los cambios en la colección 'folders' en tiempo real
+        db.collection('folders')
+            .where("association", "==", ruc)
+            .onSnapshot(async (snapshot) => {
+                // Limpia el DataTable cada vez que los datos cambien
+                dataTable.clear();
+
+                for (const doc of snapshot.docs) {
+                    const folderData = doc.data();
+
+                    // Inicializa la tabla de contenido
+                    let tableContent = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="color:white;background-color: grey;">Nombres</th>
+                                    <th style="color:white;background-color: grey;">DNI</th>
+                                    <th style="color:white;background-color: grey;">Teléfono</th>
+                                    <th style="color:white;background-color: grey; border-top-right-radius: 8px;">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+                    try {
+                        // Escucha los cambios en los documentos relacionados en tiempo real
+                        const filesSnapshot = await db.collection('files')
+                            .where("folder", "==", folderData.codeFolder)
+                            .get(); // Usar onSnapshot aquí también es posible si se necesitan actualizaciones en tiempo real.
+
+                        filesSnapshot.forEach(fileDoc => {
+                            const fileData = fileDoc.data();
+
+                            if(idUserAssociation == ""){
+                                idUserAssociation = fileData.idUserAssociation
+                                codeFolder = fileData.folder
+                            }
+
+                            // Añade filas a la tabla basado en los datos del archivo
+                            tableContent += `
+                                <tr>
+                                    <td>${fileData.name}</td>
+                                    <td>${fileData.dni}</td>
+                                    <td>${fileData.phone}</td>
+                                    <td>${getStatus(fileData.status)}</td>
+                                </tr>`;
+                        });
+
+                        tableContent += '</tbody></table>';
+                    } catch (fileError) {
+                        console.error(`Error al obtener archivos para carpeta ${folderData.codeFolder}: `, fileError);
+                    }
+
+                    // Genera el contenido dinámico para la fila
+                    const inCharge = folderData.nameInCharge || "Ninguno";
+                    const content = `
+                        <div class="accordion accordion-flush">  
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading${doc.id}">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse${doc.id}" aria-expanded="false" aria-controls="collapse${doc.id}">  
+                                        Código de carpeta: ${folderData.codeFolder} &nbsp;&nbsp; | 
+                                        &nbsp;&nbsp; Cantidad de expedientes: ${folderData.quantityFiles} &nbsp;&nbsp; | 
+                                        &nbsp;&nbsp; A cargo de: ${inCharge} &nbsp;&nbsp; | 
+                                        &nbsp;&nbsp; Fecha de operación: ${formatoFechaDesdeTimestamp(folderData.dateRegister)} 
+                                        ${obtenerHoraMinutoDesdeTimestamp(folderData.dateRegister)}
+                                    </button>
+                                </h2>
+                                <div id="collapse${doc.id}" class="accordion-collapse collapse" 
+                                    aria-labelledby="heading${doc.id}" data-bs-parent="#accordionFlushExample">
+                                    <div class="accordion-body">${tableContent}</div>
+                                </div>
+                            </div>
+                        </div>`;
+
+                    const button = `
+                        <center>
+                            <button onclick="showMigrate('${folderData.id}','${inCharge}','${idUserAssociation}','${codeFolder}','${folderData.idInCharge}')" class="btn btn-danger">
+                                Migrar
                             </button>
-                        </h2>
-                    </div>
-                </div>`;
+                        </center>`;
 
-            let button = `<center><button onclick="showMigrate('folder','${folderData.id}')" class="btn btn-danger">Migrar</button></center>`    
-            
-            // Añade la fila al DataTable
-            dataTable.row.add([button,content]);
-        });
-        
-        // Dibuja el DataTable con los nuevos datos
-        dataTable.draw(false);
-        dataTable.columns.adjust().draw(false);
+                    // Añade la fila al DataTable
+                    dataTable.row.add([button, content]);
+                }
+
+                // Dibuja el DataTable con los nuevos datos
+                dataTable.draw(false);
+                dataTable.columns.adjust().draw(false);
+                document.getElementById("loaderFolders").style = "display:none;";
+            }, (error) => {
+                console.error("Error al escuchar cambios en documentos: ", error);
+                document.getElementById("loaderFolders").style = "display:none;";
+            });
     } catch (error) {
-        console.error("Error al obtener documentos: ", error);
+        console.error("Error al inicializar la escucha de documentos: ", error);
+        document.getElementById("loaderFolders").style = "display:none;";
     }
 }
 
-function showMigrate(type,id){
-    $('#updateMigrate').modal('show'); 
-    if(type == "folder"){
-        alert("folder -> "+id)
-    }else{
-        alert("file -> "+id)
+function showMigrate(id,actualInCharge,idUserAssociation,codeFolder,actualIdInCharge) {
+    $('#updateMigrate').modal('show');
+
+    let footer = document.getElementById("footer");
+    footer.innerHTML = `
+        <button id="btnMigrate" onclick="migrate('${id}','${actualInCharge}','${idUserAssociation}','${codeFolder}','${actualIdInCharge}')" class="btn btn-success">
+            Iniciar migración
+        </button>
+        <div id="loaderMigrate" style="color:black;" class="loaderSmall"></div>`;
+    footer.style.display = "flex";
+}
+
+
+async function migrate(id,actualInCharge,idUserAssociation,codeFolder,actualIdInCharge) {
+    // Captura los valores del select al momento de iniciar la migración
+    let idInCharge = document.getElementById("selectOperator");
+    let optionSelect = idInCharge.options[idInCharge.selectedIndex];
+    let nameInCharge = optionSelect.text;
+
+    
+    console.log(actualIdInCharge+' '+idInCharge.value)
+
+
+    if (actualIdInCharge === idInCharge.value) {
+        Swal.fire({
+            title: "Advertencia",
+            text: "El nuevo operador debe ser diferente al actual.",
+            icon: "warning"
+        });
+        return; // Salir de la función
+    }
+
+    // Muestra el loader y oculta los botones
+    document.getElementById("loaderMigrate").style.display = "flex";
+    document.getElementById("btn-close-modal3").style.display = "none";
+    document.getElementById("btnMigrate").style.display = "none";
+    document.getElementById("selectOperator").disabled = true
+
+    try {
+        // Actualiza el atributo `idInCharge` en el documento de la colección `folders`
+        await db.collection('folders').doc(id).update({
+            idInCharge: idInCharge.value,
+            nameInCharge: nameInCharge
+        });
+        console.log(`Atributo 'idInCharge' actualizado en folder ${id}.`);
+
+        // Obtiene los documentos de la colección `files` donde `idFolder` coincide con `id`
+        const filesSnapshot = await db.collection('files').where('idFolder', '==', id).get();
+
+        if (!filesSnapshot.empty) {
+            const batch = db.batch(); // Usa un batch para realizar actualizaciones múltiples
+
+            filesSnapshot.forEach(fileDoc => {
+                const fileRef = db.collection('files').doc(fileDoc.id);
+
+                // Actualiza cada documento en la colección `files`
+                batch.update(fileRef, {
+                    idInCharge: idInCharge.value,
+                    inCharge: nameInCharge
+                });
+            });
+
+            // Ejecuta el batch
+            await batch.commit();
+
+            await db.collection("logs").add({
+                idUser: user.id,
+                nameUser:user.name +' '+user.lastName,
+                type : "update",
+                content : `El usuario ha realizado una migracion de operador a operador
+                ${actualInCharge} -> ${nameInCharge}
+                `,
+                timestamp : Date.now()
+            });
+
+            await firebase.firestore().collection("notifications").add({
+                idFolder: id,
+                name: user.name +' '+user.lastName,
+                idUser: idUserAssociation,
+                title: "¡Se ha realizado una migración!",
+                type: "migration",
+                content: `La carpeta ${codeFolder} a cargo de ${actualInCharge} ahora será responsable ${nameInCharge}`,
+                isOpen: false,
+                timestamp: Date.now()
+            });
+
+            Swal.fire({
+                title: "Muy bien",
+                text: "Migración completada!",
+                icon: "success"
+            });
+
+            // Oculta el loader y muestra los botones
+            document.getElementById("loaderMigrate").style.display = "none";
+            document.getElementById("btn-close-modal3").style.display = "flex";
+            document.getElementById("btnMigrate").style.display = "flex";
+            document.getElementById("selectOperator").disabled = false
+            $('#updateMigrate').modal('hide');
+        } else {
+            Swal.fire({
+                title: "Oops",
+                text: "No se encontraron documentos para migrar.",
+                icon: "warning"
+            });
+
+            // Oculta el loader y muestra los botones
+            document.getElementById("loaderMigrate").style.display = "none";
+            document.getElementById("btn-close-modal3").style.display = "flex";
+            document.getElementById("btnMigrate").style.display = "flex";
+            document.getElementById("selectOperator").disabled = false
+        }
+    } catch (error) {
+        Swal.fire({
+            title: "Oops",
+            text: "Migración cancelada!",
+            icon: "warning"
+        });
+
+        // Oculta el loader y muestra los botones
+        document.getElementById("loaderMigrate").style.display = "none";
+        document.getElementById("btn-close-modal3").style.display = "flex";
+        document.getElementById("btnMigrate").style.display = "flex";
+        document.getElementById("selectOperator").disabled = false
     }
 }
 
@@ -491,3 +635,4 @@ function exportToExcel(){
     let xls = new XlsExport(dataExcel, 'asociaciones');
     xls.exportToXLS('asociaciones.xls')
   }
+

@@ -157,7 +157,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Detalle de la Asociación</h5>
-                    <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" id="btn-close-modal2" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
 
@@ -174,26 +174,8 @@
 
                     <br>
 
-                    <h5 style="color: #148300;font-weight: 700;">Expedientes</h5>
-
-                    <table class="table table-hover table-bordered display overflow-hidden" id="tb-data1">
-                        <thead>
-                            <tr> 
-                                <th></th>
-                                <th>Código de expediente</th>
-                                <th>Nombres</th>
-                                <th>DNI</th>
-                                <th>Teléfono</th>
-                                <th>Fecha de registro</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                         
-                        </tbody>
-                    </table>
-
                     <h5 style="color: #530588;font-weight: 700;">Carpetas</h5>
+                    <center><div id="loaderFolders" class="loaderSmall"></div></center>
 
                     <table class="table table-hover table-bordered display overflow-hidden" id="tb-data2">
                         <thead>
@@ -202,11 +184,10 @@
                                 <th></th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tbody"> 
                          
                         </tbody>
                     </table>
-
                 </div>
             </div>
         </div>
@@ -216,12 +197,12 @@
     
     <!--MODAL MIGRATE-->
 
-    <div class="modal fade" id="updateMigrate" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal fade" style="background-color: #ffffff8f;" id="updateMigrate" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Selecione un operador</h5>
-                    <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" id="btn-close-modal3" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
 
@@ -230,6 +211,8 @@
         
                         </select>
                       </div>
+
+                      <div class="modal-footer" id="footer"></div>  
 
                 </div>
             </div>

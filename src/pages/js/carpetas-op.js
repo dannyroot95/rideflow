@@ -153,9 +153,6 @@ foldersCollection
         </div>    
         `;
 
-        quantity1 = 0
-        quantity6 = 0
-
         dataTable.row.add([
             content
         ]);

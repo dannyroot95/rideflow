@@ -1,0 +1,148 @@
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+   
+    <script src="../../vendor/jquery/jquery-3.2.1.min.js"></script>
+    <link rel='stylesheet' type='text/css' media='screen' href='/src/css/style.css'>
+    <link rel='stylesheet' type='text/css' media='screen' href='/css/bootstrap-icons/font/bootstrap-icons.min.css'>
+    <link href="../../vendor/datatables/datatables.min.css" rel="stylesheet">
+    <script src="../../vendor/datatables/datatables.min.js"></script>
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../vendor/sweetalert/sweet.min.js"></script>
+    <script src="../../vendor/xlsexport/xls-export.js"></script>
+
+	<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+  
+
+    <style>
+    div:where(.swal2-container).swal2-backdrop-show, div:where(.swal2-container).swal2-noanimation {
+    background: rgb(255 255 255 / 40%);
+}
+
+    div:where(.swal2-container) div:where(.swal2-popup) {
+        display: none;
+        position: relative;
+        box-sizing: border-box;
+        grid-template-columns: minmax(0, 100%);
+        width: 32em;
+        max-width: 100%;
+        padding: 0 0 1.25em;
+        border: none;
+        border-radius: 5px;
+        background: #093e00;
+        color: #ffffff;
+        font-family: inherit;
+        font-size: 1rem;
+    }
+
+    div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-confirm) {
+        border: 0;
+        border-radius: .25em;
+        background: initial;
+        background-color: #ffffff;
+        color: #000000;
+        font-size: 1em;
+    }
+
+    #preview {
+        width: 105px; /* Ancho para tamaño foto carnet escalado */
+        height: 135px; /* Altura para tamaño foto carnet escalado */
+        border: 1px solid #ccc; /* Borde gris */
+        display: block; /* Se muestra siempre, incluso sin imagen */
+    }
+
+    .swal2-toast .swal2-title {
+        color: black !important;
+    }
+
+
+    </style>
+  
+</head>
+
+<body>
+
+    <center>
+            <div style="margin-top: 20%;" class="loader" id="loader" style="display: block;">
+            </div>
+    </center>
+
+    <label style="font-weight: 500;color: #093e00;font-size: 19px;">Tarjetas de operación</label>
+    <div id="container" style="display: none;">
+          <table class="table table-hover table-bordered display overflow-hidden" id="tb-data">
+            <thead>
+                <tr> 
+                    <th></th>
+                    <th>Nombres</th>
+                    <th>DNI</th>
+                    <th>Tajeta de operacion</th>
+                    <th>Estado</th>
+                    <th>Fecha de emision</th>
+                    <th>Fecha de vigencia</th>
+                </tr>
+            </thead>
+            <tbody>
+             
+            </tbody>
+        </table>
+    </div>
+
+    <label style="font-weight: 500;color: #c31000;font-size: 19px;">Solicitudes de baja de tarjetas</label>
+    <div id="container2" style="display: none;">
+        <table class="table table-hover table-bordered display overflow-hidden" id="tb-data2">
+          <thead>
+              <tr> 
+                  <th></th>
+                  <th>Codigo de solicitud</th>
+                  <th>Nombres</th>
+                  <th>DNI</th>
+                  <th>Tajeta de operacion</th>
+                  <th>Estado</th>
+              </tr>
+          </thead>
+          <tbody>
+           
+          </tbody>
+      </table>
+  </div>
+
+    <div class="modal fade" id="fileModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Complete los campos para crear un expediente</h5>
+                    <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                   <!---->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="modal fade" id="details" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Detalle de expediente</h5>
+                    <button type="button" id="d-btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                   
+                      
+              
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/config.js"></script>
+    <script src="/src/pages/js/bajasAsoc.js"></script>
+
+</body>

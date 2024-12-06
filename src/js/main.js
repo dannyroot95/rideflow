@@ -65,6 +65,12 @@ function handleHashChange() {
         case '#tarjetas-de-operacion-v':
             gotoPage("tarjetas-de-operacion-v","Tarjetas de operación","tarjetas-de-operacion-v");
             break;  
+        case '#bajasAdmin':
+            gotoPage("bajasAdmin","Solicitud de bajas de tarjeta de operación","bajasAdmin");
+            break; 
+        case '#bajasAsoc':
+            gotoPage("bajasAsoc","Solicitud de bajas de tarjeta de operación","bajasAsoc");
+            break;     
         case '#incidentes':
             gotoPage("incidentes","Incidentes","incidentes");
             break;       

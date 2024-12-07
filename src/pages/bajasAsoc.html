@@ -71,7 +71,7 @@
             </div>
     </center>
 
-    <label style="font-weight: 500;color: #093e00;font-size: 19px;">Tarjetas de operación</label>
+    <label style="display: none;" id="title1">Tarjetas de operación</label>
     <div id="container" style="display: none;">
           <table class="table table-hover table-bordered display overflow-hidden" id="tb-data">
             <thead>
@@ -83,6 +83,7 @@
                     <th>Estado</th>
                     <th>Fecha de emision</th>
                     <th>Fecha de vigencia</th>
+                    <th>Revocado</th>
                 </tr>
             </thead>
             <tbody>
@@ -91,7 +92,7 @@
         </table>
     </div>
 
-    <label style="font-weight: 500;color: #c31000;font-size: 19px;">Solicitudes de baja de tarjetas</label>
+    <label id="title2" style="display: none;">Solicitudes de baja de tarjetas</label>
     <div id="container2" style="display: none;">
         <table class="table table-hover table-bordered display overflow-hidden" id="tb-data2">
           <thead>
@@ -110,15 +111,33 @@
       </table>
   </div>
 
-    <div class="modal fade" id="fileModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen">
+    <div class="modal fade" id="revokeModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="userModalLabel">Complete los campos para crear un expediente</h5>
+                    <h5 class="modal-title" style="color: #3e0020;font-weight: bold;">Complete los campos para solicitar una baja de tarjeta de operación</h5>
                     <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                   <!---->
+                
+                    <div class="mb-3 input-group">
+                        <span class="input-group-text">Nombres</span>
+                        <input type="text" class="form-control" id="name" disabled style="color: #000000;background-color: #ffffff;">
+                        <span class="input-group-text">DNI</span>
+                        <input type="tel" class="form-control" id="dni" disabled style="color: #000000;background-color: #ffffff;">
+                        <span class="input-group-text">Tarjeta de operación</span>
+                        <input type="tel" class="form-control" id="cardNumber" disabled style="color: #000000;background-color: #ffffff;">
+                    </div>
+
+                    <div class="input-group">
+                        <span class="input-group-text">Describa el motivo</span>
+                        <textarea id="txtRequest" class="form-control" aria-label="With textarea"></textarea>
+                    </div>
+
+                    <div class="modal-footer" id="footer">
+                       
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -126,11 +145,11 @@
 
 
 
-    <div class="modal fade" id="details" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal fade" id="detailsRequest" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="userModalLabel">Detalle de expediente</h5>
+                    <h5 class="modal-title" id="userModalLabel">Detalle de solicitud</h5>
                     <button type="button" id="d-btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

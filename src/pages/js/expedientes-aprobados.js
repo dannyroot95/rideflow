@@ -181,6 +181,9 @@ async function generate(file) {
             dni: fileData.dni,
             idFile: fileData.id,
             idFolder: fileData.idFolder,
+            idUserAssociation:fileData.idUserAssociation,
+            idInCharge:fileData.idInCharge,
+            inCharge:fileData.inCharge,
             name: fileData.name,
             phone: fileData.phone,
             numCardOperation: numCardOperation,  // Genera un número de tarjeta basado en el tamaño actual

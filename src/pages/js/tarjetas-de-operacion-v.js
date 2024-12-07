@@ -50,7 +50,12 @@ usersCollection.onSnapshot((snapshot) => {
 
     snapshot.forEach((doc) => {
         const fileData = doc.data();
-        const details = `
+        let revok = fileData.status
+        let details = ``
+        
+        if(revok == "ok" || revok == "request"){
+            revok = `<label style="color:green;font-weight:bold;">No</label>`
+            details = `
             <center>
                 <button class="btn btn-light" style="background-color:#C70039;color:white;height:40px;" 
                     data-user='${JSON.stringify(fileData)}' onclick="showDetails(this)">
@@ -58,6 +63,9 @@ usersCollection.onSnapshot((snapshot) => {
                 </button>
             </center>
         `;
+        }else{
+            revok = `<label style="color:red;font-weight:bold;">Si</label>`
+        }
         
         // Añadir los datos a DataTable
         dataTable.row.add([
@@ -67,7 +75,8 @@ usersCollection.onSnapshot((snapshot) => {
             fileData.numCardOperation,
             getStatus(fileData.dateGenerated,fileData.expiryDate),
             fileData.dateGenerated,
-            fileData.expiryDate
+            fileData.expiryDate,
+            revok
         ]);
 
         

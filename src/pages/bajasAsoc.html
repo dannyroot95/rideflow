@@ -116,7 +116,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" style="color: #3e0020;font-weight: bold;">Complete los campos para solicitar una baja de tarjeta de operación</h5>
-                    <button type="button" id="btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" id="btn-close-modal-request" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                 
@@ -131,7 +131,13 @@
 
                     <div class="input-group">
                         <span class="input-group-text">Describa el motivo</span>
-                        <textarea id="txtRequest" class="form-control" aria-label="With textarea"></textarea>
+                        <textarea placeholder="Describa el motivo de la baja de la tarjeta de operación" id="txtRequest" class="form-control" aria-label="With textarea"></textarea>
+                    </div>
+
+                    <div class="mb-3 input-group">
+                        <span style="background-color: #000000;color: #ffffff;" class="input-group-text">Suba un archivo si lo requiere</span>
+                        <input type="file" class="form-control" id="fileRequest">
+                        
                     </div>
 
                     <div class="modal-footer" id="footer">
@@ -146,15 +152,32 @@
 
 
     <div class="modal fade" id="detailsRequest" data-bs-backdrop="static" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="userModalLabel">Detalle de solicitud</h5>
-                    <button type="button" id="d-btn-close-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="titleRequest"></h5>
+                    <button type="button" id="btn-close-modal-corrected" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+
+                    <div class="input-group">
+                        <span style="background-color: red;color: #ffffff;font-weight: bold;" class="input-group-text">Observación</span>
+                        <textarea  disabled style="color: black;background-color: white;" id="txtRequestObserved" class="form-control" aria-label="With textarea"></textarea>
+                    </div>
+                    <p></p>
                    
-                      
+                    <div class="input-group">
+                        <span class="input-group-text">Digite la correción</span>
+                        <textarea placeholder="Describa el motivo de la baja de la tarjeta de operación" id="txtRequestCorrected" class="form-control" aria-label="With textarea"></textarea>
+                    </div>
+
+                    <div class="mb-3 input-group">
+                        <span style="background-color: #000000;color: #ffffff;" class="input-group-text">Suba un archivo si lo requiere</span>
+                        <input type="file" class="form-control" id="fileRequest2">
+                    </div>
+
+
+                    <div class="modal-footer" id="footer2"></div>
               
                 </div>
             </div>
